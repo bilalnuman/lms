@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:root {
+  --font-archivo-sans: 'Archivo', sans-serif;
+}
+
+body {
+  font-family: var(--font-archivo-sans);
+}
+
+body .user-table table th {
+  @apply !bg-slate-800;
+}
+
+body .user-table table th button,
+body .user-table table th.actions {
+  @apply !text-white;
+}
+
+body .user-table table th.actions {
+  @apply !text-center;
+}
+
+.index-label {
+  color: white !important;
+}
+
+#section-1,
+#section-3,
+#section-4,
+#section-5,
+#section-7,
+#section-8,
+#section-9,
+#section-10 {
+  @apply grid-cols-12;
+}
+
+#section-1>div,
+#section-3>div {
+  @apply col-span-3;
+}
+
+#section-4>div,
+#section-5>div,
+#section-9>div,
+#section-10>div {
+  @apply col-span-4;
+}
+
+#section-10>div:last-child,
+.faculty-form #section-1 div:last-child {
+  @apply col-span-12;
+}
+
+.faculty-form textarea {
+  @apply h-auto
+}
