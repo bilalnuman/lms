@@ -304,7 +304,7 @@ export const Input = React.forwardRef<
                     htmlFor={inputId}
                     className={clsx(
                         "mb-1 block text-sm font-medium",
-                        error ? "text-red-600" : "text-slate-700",
+                        error ? "text-red-600" : "text-dark-default",
                         classNames.label
                     )}
                 >
@@ -323,7 +323,7 @@ export const Input = React.forwardRef<
                             classNames.leftSection
                         )}
                     >
-                        <div className="mx-2 rounded-md bg-slate-100 px-2 text-slate-600">
+                        <div className="mx-2 rounded-md bg-slate-100 px-2 text-dark-default">
                             {leftSection}
                         </div>
                     </div>
@@ -349,7 +349,7 @@ export const Input = React.forwardRef<
                             classNames.rightSection
                         )}
                     >
-                        <div className="mx-2 rounded-md bg-slate-100 px-2 text-slate-600">
+                        <div className="mx-2 rounded-md bg-slate-100 px-2 text-dark-default">
                             {rightSection}
                         </div>
                     </div>
@@ -373,7 +373,7 @@ export const Input = React.forwardRef<
                         type="button"
                         onClick={handleClear}
                         className={clsx(
-                            "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700",
+                            "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-dark-default",
                             (showToggle || hasPickerBtn) && "right-9",
                             classNames.clearIcon
                         )}
@@ -390,7 +390,7 @@ export const Input = React.forwardRef<
                         type="button"
                         onClick={() => setShow((v) => !v)}
                         className={clsx(
-                            "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700",
+                            "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-dark-default",
                             classNames.passwordIcon
                         )}
                         aria-label={show ? "Hide password" : "Show password"}
@@ -418,7 +418,7 @@ export const Input = React.forwardRef<
                         type="button"
                         onClick={openNativePicker}
                         className={clsx(
-                            "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700",
+                            "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-dark-default",
                             classNames.pickerIcon
                         )}
                         aria-label={pickerAriaLabel ?? "Open picker"}

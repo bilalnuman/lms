@@ -5,9 +5,10 @@ import { FaEye, FaPen, FaTrash } from 'react-icons/fa'
 interface TableActionsProps {
     row: any;
     onPress: (row: any, actionType: string) => void;
+    children?: React.ReactNode;
 }
 
-const TableActions = ({ onPress, row }: TableActionsProps) => {
+const TableActions = ({ onPress, row,children }: TableActionsProps) => {
     return (
         <div className="inline-flex items-center gap-2">
             <Button
@@ -28,6 +29,7 @@ const TableActions = ({ onPress, row }: TableActionsProps) => {
                 leftIcon={<FaTrash className="text-red-500" size={16} />}
                 className="!p-1 !h-fit !gap-0"
             />
+            {children}
         </div>
     )
 }

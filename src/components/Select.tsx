@@ -13,12 +13,13 @@ import { createPortal } from "react-dom";
 /* ===========================
    Types
 =========================== */
-export type SelectOption = {
-  value: string;
+export type SelectOption<T extends string | number = string> = {
+  value: T;
   label: string;
   disabled?: boolean;
   icon?: React.ReactNode;
 };
+
 
 type ClassNames = Partial<{
   container: string;
@@ -35,6 +36,7 @@ type ClassNames = Partial<{
   option: string;
   optionActive: string;
   optionSelected: string;
+  optionText: string,
   noOptions: string;
 
   // NEW label/error slots
@@ -202,10 +204,10 @@ export function Select<T extends SelectOption = SelectOption>(
     const src: T[] = loadOptions
       ? (asyncOptions ?? [])
       : (() => {
-          const ql = q.trim().toLowerCase();
-          if (!ql) return options;
-          return options.filter((o) => o.label.toLowerCase().includes(ql));
-        })();
+        const ql = q.trim().toLowerCase();
+        if (!ql) return options;
+        return options.filter((o) => o.label.toLowerCase().includes(ql));
+      })();
 
     if (!isRemoveSelected || selectedArray.length === 0) return src;
     return src.filter((o) => !includesOption(selectedArray, o));
@@ -250,10 +252,10 @@ export function Select<T extends SelectOption = SelectOption>(
       menuPlacement === "top"
         ? "top"
         : menuPlacement === "bottom"
-        ? "bottom"
-        : spaceBelow >= 180
-        ? "bottom"
-        : "top";
+          ? "bottom"
+          : spaceBelow >= 180
+            ? "bottom"
+            : "top";
     const top = place === "bottom" ? rect.bottom + scrollY : rect.top + scrollY;
 
     setMenuPos({ top, left, width, place });
@@ -387,7 +389,7 @@ export function Select<T extends SelectOption = SelectOption>(
             htmlFor={inputId}
             className={clsx(
               "mb-1 block text-sm font-medium",
-              error ? "text-red-600" : "text-slate-700",
+              error ? "text-red-600" : "text-dark-default",
               classNames?.label
             )}
           >
@@ -445,7 +447,7 @@ export function Select<T extends SelectOption = SelectOption>(
                     type="button"
                     aria-label="Remove"
                     className={clsx(
-                      "text-slate-500 hover:text-slate-700",
+                      "text-slate-500 hover:text-dark-default",
                       classNames?.tagRemove
                     )}
                     onClick={(e) => {
@@ -533,7 +535,7 @@ export function Select<T extends SelectOption = SelectOption>(
                 type="button"
                 onClick={clear}
                 className={clsx(
-                  "rounded p-1 text-slate-400 hover:text-slate-600",
+                  "rounded p-1 text-slate-400 hover:text-dark-default",
                   classNames?.clear
                 )}
                 aria-label="Clear"
@@ -631,7 +633,7 @@ export function Select<T extends SelectOption = SelectOption>(
                     ) : (
                       <span className="inline-flex items-center gap-2">
                         {opt.icon && <span className="shrink-0">{opt.icon}</span>}
-                        <span className="capitalize">{opt.label}</span>
+                        <span className={clsx("capitalize", classNames?.optionText)}>{opt.label}</span>
                       </span>
                     )}
                   </div>

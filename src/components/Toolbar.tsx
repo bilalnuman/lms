@@ -17,7 +17,7 @@ export interface ToolbarProps {
 const Toolbar = ({ tk }: ToolbarProps) => {
     const [bulk, setBulk] = React.useState<{ label: string; value: string } | null>(null);
     return (
-        <div className="flex items-center justify-end gap-3 mt-3">
+        <div className="flex items-center justify-end gap-3">
             {tk.selectedRows.length > 0 && (
                 <Select
                     options={BULK_ACTIONS}

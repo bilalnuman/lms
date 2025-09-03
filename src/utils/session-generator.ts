@@ -33,5 +33,5 @@ export function sessions(opts?: {
   return out;
 }
 
-// Typo-friendly alias exactly as you requested:
+
 export const sesstions = sessions;

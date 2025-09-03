@@ -157,7 +157,7 @@ export function Breadcrumbs({
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className={clsx("w-full", classNames?.container)}>
+    <nav aria-label="Breadcrumb" className={clsx("w-full pt-2", classNames?.container)}>
       <ol className={clsx("flex items-center gap-1 text-sm text-slate-500", classNames?.list)}>
         {items.map((item, idx) => {
           const isLast = idx === items.length - 1;
@@ -168,7 +168,7 @@ export function Breadcrumbs({
               {isLast ? (
                 <span
                   aria-current="page"
-                  className={clsx("truncate max-w-[14rem] text-slate-700", classNames?.current)}
+                  className={clsx("truncate max-w-[14rem] text-dark-default", classNames?.current)}
                   title={String(item.label)}
                 >
                   {item.label}
@@ -177,7 +177,7 @@ export function Breadcrumbs({
                 <Link
                   href={item.href}
                   className={clsx(
-                    "truncate max-w-[14rem] hover:text-slate-700 underline-offset-2 hover:underline",
+                    "truncate max-w-[14rem] hover:text-dark-default underline-offset-2 hover:underline",
                     classNames?.link
                   )}
                   title={String(item.label)}

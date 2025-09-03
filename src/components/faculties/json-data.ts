@@ -28,11 +28,3 @@ for (let i = 1; i <= maxYear; i++) {
 }
 
 export const columnOorder = ["roll", "from", "batch", "className", "sessionName", "mobile", "email", "status"]
-export const exportOptions = [
-    { value: "csv", label: "CSV" },
-    { value: "xlsx", label: "Excel (XLSX)" },
-    { value: "pdf", label: "PDF" },
-    { value: "xml", label: "xml" },
-    { value: "text", label: "text" },
-    { value: "sql", label: "sql" },
-];

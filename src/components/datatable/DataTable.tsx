@@ -148,9 +148,11 @@ function DataTable<T extends Record<string, any>>({
                     <td className={styles.td}>{idx + 1}</td>
                     {columns.map((column) => (
                       <td key={String(column.key)} className={styles.td}>
-                        {column.render
-                          ? column.render(item[column.key], item)
-                          : String(item[column.key] ?? "")}
+                        <div className={String(column?.key ?? "")}>
+                          {column.render
+                            ? column.render(item[column.key], item)
+                            : String(item[column.key] ?? "")}
+                        </div>
                       </td>
                     ))}
                   </tr>

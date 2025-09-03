@@ -107,7 +107,7 @@ export function Dropdown({
         </span>
         <IoChevronDown
           className={clsx(
-            "ml-1 transition-transform",
+            "ml-1 transition-transform text-dark-default",
             open && "rotate-180",
             classNames?.icon
           )}

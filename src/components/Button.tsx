@@ -44,10 +44,10 @@ function baseClasses(isDisabled: boolean) {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500",
+  primary: "bg-indigo-default text-white hover:bg-indigo-700 focus-visible:ring-indigo-500",
   secondary: "bg-slate-900 text-white hover:bg-slate-800 focus-visible:ring-slate-700",
-  outline: "bg-white text-slate-900 border border-slate-300 hover:bg-slate-100 focus-visible:ring-slate-400",
-  ghost: "bg-transparent text-slate-900 hover:bg-slate-100 focus-visible:ring-slate-400",
+  outline: "bg-white text-dark-default border border-slate-300 hover:bg-slate-100 focus-visible:ring-slate-400",
+  ghost: "bg-transparent text-dark-default hover:bg-slate-100 focus-visible:ring-slate-400",
   danger: "bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-500",
 };
 

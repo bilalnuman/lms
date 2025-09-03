@@ -22,8 +22,8 @@ function NavLink({
             className={clsx(
                 "group flex items-center gap-2 rounded-lg px-3 py-2 transition-colors capitalize",
                 "!text-[15px]",
-                active && !isChild && "bg-slate-100 text-slate-900 ",
-                !isChild && "hover:bg-slate-100 hover:text-slate-900",
+                active && !isChild && "bg-slate-100 text-dark-default ",
+                !isChild && "hover:bg-slate-100 hover:text-dark-default",
                 isChild && "hover:text-white",
                 active && isChild && "text-white hover:text-white",
             )}

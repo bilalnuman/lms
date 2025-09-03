@@ -1,8 +1,8 @@
 import React from "react";
 import { Dropdown } from "../Dropdown";
 import { Button } from "../Button";
-import { exportOptions } from "./json-data";
 import { AiOutlineExport } from "react-icons/ai";
+import { exportOptions } from "@/utils/app-json.data";
 
 
 type Props = {

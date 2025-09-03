@@ -8,10 +8,11 @@ import { Column } from "@/components/datatable";
 import { FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { buildStudentColumns, type Student as StudentRow } from "./columns";
-import { classes, status } from "./json-data";
+import { status } from "./json-data";
 import { sessions } from "@/utils/session-generator";
 import Toolbar from "../Toolbar";
 import TableWidget from "../TableWidget";
+import { classes } from "../classes/json-data";
 
 export const filterOptions = {
     Status: status,
@@ -66,9 +67,9 @@ export default function StudentListing() {
 
     return (
         <div className="py-5 mt-3 relative">
-            <Button as="a" href="/students/register" size="sm" className="absolute end-4 -top-[30px] text-xs !rounded">Register new student</Button>
+            <Button as="a" href="/students/register" size="sm" className="absolute end-0 -top-[30px] text-xs !rounded">Register new student</Button>
             {/* Filters */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            <div className="mb-10 grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {(Object.keys(filterOptions || {})).map((key: any) => {
                     const opts = filterOptions[key as FilterKey] || [];
                     return (
@@ -95,7 +96,7 @@ export default function StudentListing() {
             {/* Toolbar */}
             <Toolbar tk={tk} />
 
-            <div className="mt-5 user-table">
+            <div className="mt-5 table-class">
                 <TableWidget tk={tk} />
             </div>
         </div>

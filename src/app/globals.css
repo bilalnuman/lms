@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
@@ -15,10 +17,19 @@
 
 body {
   font-family: var(--font-archivo-sans);
+  @apply text-dark-default
+
+}
+body.hide main{
+  @apply xl:ps-20 ps-20
 }
 
 body .user-table table th {
   @apply !bg-slate-800;
+}
+
+table input[type="checkbox"] {
+  @apply accent-indigo-default
 }
 
 body .user-table table th button,
@@ -29,11 +40,15 @@ body .user-table table th.actions {
 body .user-table table th.actions {
   @apply !text-center;
 }
-
-.index-label {
-  color: white !important;
+table td {
+  @apply whitespace-nowrap
 }
-
+table .actions{
+  @apply text-center;
+}
+table .actions button:first-child svg{
+  @apply !text-dark-default
+}
 #section-1,
 #section-3,
 #section-4,

@@ -30,7 +30,15 @@ const config = {
         }
       },
       colors: {
-       
+        gray: {
+          "default": "#E5E6E1",
+        },
+        dark: {
+          default: "#3A425B",
+        },
+        indigo: {
+          default: "#4f46e5",
+        }
       },
       fontFamily: {
       },

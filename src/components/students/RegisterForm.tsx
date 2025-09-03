@@ -37,7 +37,7 @@ function RadioGroup({
 }) {
     return (
         <div className="col-span-6 lg:col-span-3">
-            <div className="mb-1 text-sm font-medium text-slate-700">
+            <div className="mb-1 text-sm font-medium text-dark-default">
                 {label} {required && <span className="text-red-600">*</span>}
             </div>
             <div className="flex flex-wrap gap-4 rounded-md border border-slate-200 p-2">
@@ -226,7 +226,7 @@ export default function RegisterForm() {
                 formSections.map((sec, i) => (
                     <section key={i} className="rounded-md border border-slate-200 bg-slate-50 p-4">
                         {sec.title && (
-                            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-600 flex justify-between">
+                            <h3 className="mb-3 text-sm font-semibold uppercase text-dark-default flex justify-between">
                                 {sec.title}
                                 {i === 0 && <div className="">
                                     <picker.DragAndDropArea Icon={<FaCamera />}>

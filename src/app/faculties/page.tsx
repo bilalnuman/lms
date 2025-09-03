@@ -97,14 +97,14 @@ export default function FacultytListing() {
     })
 
     return (
-        <div className="py-5 mt-3 relative">
-            <Button as="a" href="/faculties/register" size="sm" className="absolute end-4 -top-[30px] text-xs !rounded">Register new faculty</Button>
+        <div className="py-5 mt-10 relative">
+            <Button as="a" href="/faculties/register" size="sm" className="absolute end-0 -top-[60px] text-xs !rounded">Register new faculty</Button>
 
 
             {/* Toolbar */}
             <Toolbar tk={tk} />
 
-            <div className="mt-5 user-table">
+            <div className="mt-5 table-class">
                 <TableWidget tk={tk} />
             </div>
         </div>

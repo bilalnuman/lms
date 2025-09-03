@@ -2,9 +2,10 @@
 import * as React from "react";
 import TableActions from "../TableActions";
 import { buildColumnsFromData } from "@/utils/columnGenerator";
-import { columnOorder, classes, status } from "./json-data";
+import { columnOorder, status } from "./json-data";
 import { Column } from "../datatable";
 import { sessionOptions } from "./studentForm.config";
+import { classes } from "../classes/json-data";
 type SortDir = "asc" | "desc" | null;
 
 export type Student = { /* ...unchanged... */ };

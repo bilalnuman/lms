@@ -31,6 +31,8 @@ export function Sidebar() {
   }, []);
 
   useEffect(() => {
+    const body=document.querySelector('body');
+    collapsed?(body?.classList.add("hide"),setOpenKey(null)):body?.classList.remove("hide")
     localStorage.setItem("sidebar-collapsed", String(collapsed));
   }, [collapsed]);
 
@@ -54,7 +56,7 @@ export function Sidebar() {
   return (
     <aside
       className={clsx(
-        "fixed top-0 h-screen border-r border-slate-200 pb-10 bg-gray-500 pt-14 transition-all duration-200 overflow-x-auto scrollbar-hide",
+        "fixed top-0 h-screen border-r border-slate-200 pb-10 bg-gray-default pt-14 transition-all duration-200 overflow-x-auto scrollbar-hide",
         collapsed ? "w-16" : "w-56"
       )}
     >
@@ -65,10 +67,9 @@ export function Sidebar() {
           className="ms-auto my-1 !h-fit !p-0 hover:bg-transparent"
         >
           <FaRegArrowAltCircleLeft
-            color="#fff"
             size={20}
             className={clsx(
-              "transition-transform duration-700",
+              "transition-transform duration-700 text-dark-default",
               collapsed && "rotate-180"
             )}
           />
@@ -86,13 +87,15 @@ export function Sidebar() {
               <div key={item.href}>
                 <Button
                   variant="ghost"
+                  childrenClass={clsx(collapsed && "truncate sr-only")}
                   onClick={() => toggleOpen(item.href)}
                   className={clsx(
                     "gap-2 !rounded-lg !px-3 !py-2 !transition-colors !capitalize relative",
-                    "hover:!bg-slate-100 !hover:text-slate-900 w-full justify-between !font-normal !text-[15px] justify-start",
-                    collapsed && "justify-center",
-                    activeParent && !activeChild && "bg-slate-100 text-slate-900",
-                    activeChild && "bg-white text-slate-900"
+                    "hover:!bg-slate-100 !hover:text-dark-default w-full justify-between !font-normal !text-[15px]",
+                    collapsed && "!justify-center",
+                    activeParent && !activeChild && "bg-slate-100 text-dark-default",
+                    activeChild && "bg-white text-dark-default",
+                    
                   )}
                   leftIcon={<Icon size={20} />}
                   rightIcon={
