@@ -1,53 +1,60 @@
+// auth.ts
 import { NextRequest } from "next/server";
-import { jwtVerify, JWTPayload } from "jose";
+import { jwtVerify, type JWTPayload, createRemoteJWKSet } from "jose";
+const AUTH_COOKIE = process.env.AUTH_COOKIE??""
+const AUTH_SECRET = process.env.AUTH_SECRET
+const AUTH_JWKS_URL = process.env.AUTH_JWKS_URL;
 
-
-const AUTH_COOKIE = process.env.AUTH_COOKIE || "session_token";
-const AUTH_SECRET = process.env.AUTH_SECRET || "replace-me-dev-secret"; // set in prod
 
 
 export type SessionUser = {
-    id: string;
-    roles: string[]; // normalized lower-case role slugs
-    permissions: string[]; // expanded list incl. role-derived perms
-    raw: JWTPayload; // original claims
+  id: string;
+  roles: string[];
+  permissions: string[];
+  raw: JWTPayload;
 };
 
+function normalizeList(v: unknown): string[] {
+  if (!v) return [];
+  const arr = Array.isArray(v) ? v : [v];
+  return arr.filter(Boolean).map((x) => String(x).toLowerCase());
+}
+
+function readTokenFromCookie(req: NextRequest): string | null {
+  const raw = req.cookies.get(AUTH_COOKIE)?.value;
+  if (!raw) return null;
+  return raw.startsWith("Bearer ") ? raw.slice(7) : raw;
+}
+
+async function verifyToken(token: string) {
+  if (AUTH_JWKS_URL) {
+    const JWKS = createRemoteJWKSet(new URL(AUTH_JWKS_URL));
+    return jwtVerify(token, JWKS, { algorithms: ["RS256"] });
+  }
+  const key = new TextEncoder().encode(AUTH_SECRET);
+  return jwtVerify(token, key, { algorithms: ["HS256"] });
+}
 
 export async function getUserFromRequest(req: NextRequest): Promise<SessionUser | null> {
-    const token = req.cookies.get(AUTH_COOKIE)?.value;
-    if (!token) return null;
+  const token = readTokenFromCookie(req);
+  if (!token) return null;
 
+  try {
+    const { payload } = await verifyToken(token);
+    const claims: any = (payload as any).payload ?? (payload as any).data ?? payload;
 
-    try {
-        const { payload } = await jwtVerify(token, new TextEncoder().encode(AUTH_SECRET));
+    const id =
+      (claims.sub as string | undefined) ||
+      (claims.id as string | undefined) ||
+      (claims.userId as string | undefined);
 
+    if (!id) return null;
 
-        const id = (payload.sub as string) || "";
-        if (!id) return null;
+    const roles = normalizeList(claims.roles ?? claims.role);
+    const permissions = normalizeList(claims.permissions);
 
-
-        // Normalize roles -> [string]
-        const roles = (Array.isArray(payload.roles)
-            ? payload.roles
-            : (payload as any).role
-                ? [(payload as any).role]
-                : [])
-            .filter(Boolean)
-            .map((r) => String(r).toLowerCase());
-
-
-        const permissions = (Array.isArray((payload as any).permissions)
-            ? (payload as any).permissions
-            : [])
-            .filter(Boolean)
-            .map((p: string) => String(p).toLowerCase());
-
-
-        const user: SessionUser = { id, roles, permissions, raw: payload };
-        return user;
-    } catch {
-        // Invalid/expired token -> anonymous
-        return null;
-    }
+    return { id, roles, permissions, raw: payload };
+  } catch {
+    return null;
+  }
 }

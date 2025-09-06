@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers/providers";
 
 const archivo = Archivo({
   variable: "--font-archivo-sans",
@@ -22,7 +23,7 @@ export default function RootLayout({
       <body
         className={`${archivo.variable}  antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -6,6 +6,8 @@ import type { SessionUser } from "./auth";
 export const LOGIN_ROUTE = "/";
 export const DEFAULT_AFTER_LOGIN_ROUTE = "/dashboard";
 
+
+
 const PUBLIC_ROUTES = new Set<string>([
   "/",
   LOGIN_ROUTE,
@@ -23,8 +25,20 @@ const AUTH_ROUTES = new Set<string>([
   "/reset-password",
 ]);
 
+const PUBLIC_API_PATTERNS = [
+  /^\/api\/session$/,                             // set access cookie
+  /^\/api\/logout$/,                              // clear access cookie
+  /^\/api\/backend\/api\/v1\/auth\/login$/,       // proxied backend login
+  /^\/api\/backend\/auth\/refresh$/,              // (if you have a refresh proxy)
+  /^\/api\/health$/,                              // your existing example
+];
+
+
+
 export function isPublicRoute(pathname: string) {
-  return PUBLIC_ROUTES.has(normalize(pathname));
+  const p = normalize(pathname);
+  if (PUBLIC_ROUTES.has(p)) return true;
+  return PUBLIC_API_PATTERNS.some(rx => rx.test(p));
 }
 export function isAuthRoute(pathname: string) {
   return AUTH_ROUTES.has(normalize(pathname));

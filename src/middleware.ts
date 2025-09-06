@@ -11,8 +11,8 @@ import {
 } from "@/lib/access-control";
 
 
-export async function middleware(req: NextRequest) {
-    
+export async function middleware(req: NextRequest) {   
+     
     const url = req.nextUrl;
     const pathname = url.pathname;
     const isApi = pathname.startsWith("/api/");
@@ -22,7 +22,6 @@ export async function middleware(req: NextRequest) {
     if (isPublicRoute(pathname)) {
         return NextResponse.next();
     }
-
 
     // 2) Extract user (from signed JWT cookie)
     const user = await getUserFromRequest(req);

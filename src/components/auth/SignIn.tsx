@@ -6,31 +6,29 @@ import Input from '../widgets/Input'
 import { Button } from '../widgets/Button'
 import { LoginFormValue, loginSchema } from '@/utils/formSchemas'
 import Heading from '../widgets/Heading'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useLogin } from '@/hooks/useLogin'
 interface Props {
     children?: ReactNode
 }
 
 const LoginForm = ({ children }: Props) => {
+    const router = useRouter();
+    const params = useSearchParams();
+    const loginMutation = useLogin();
+
+
     const login = async (formData: LoginFormValue) => {
-        try {
-            const res = await fetch("http://localhost:5000/api/v1/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-                credentials: "include",
-            });
-
-            if (!res.ok) {
-                throw new Error("Login failed");
-            }
-
-            const data = await res.json();
-            console.log("Login success:", data);
-        } catch (err) {
-            console.error("Error:", err);
-        }
+        const next = await decodeURIComponent(params.get("next") || "/dashboard");
+        await loginMutation.mutateAsync(formData, {
+            onSuccess(data, variables, context) {
+                console.log(data)
+                router.replace(next);
+            },
+            onError(error, variables, context) {
+                console.log(error)
+            },
+        });
     };
 
     return (
@@ -43,12 +41,12 @@ const LoginForm = ({ children }: Props) => {
                 {({ register, formState: { errors, isSubmitting } }) => {
                     return (
                         <div className="flex flex-col gap-4">
-                            <Input label="Password"  {...register("password")}
-                                error={errors.password?.message}
-                                required
-                            />
                             <Input label="Email" {...register("email")}
                                 error={errors.email?.message}
+                                required
+                            />
+                            <Input label="Password"  {...register("password")}
+                                error={errors.password?.message}
                                 required
                             />
                             <Button

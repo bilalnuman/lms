@@ -13,7 +13,8 @@ type CommonProps = {
   rightIcon?: React.ReactNode;
   className?: string;
   childrenClass?: string;
-  label: string | ReactNode
+  label: string | ReactNode,
+  children?: ReactNode
 };
 
 type NextHref = LinkProps["href"];
@@ -153,7 +154,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         >
           {loading && Spinner}
           {leftIcon && <span className="-ml-0.5">{leftIcon}</span>}
-          <span className={clsx("inline-flex items-center", childrenClass)}>{label||children}</span>
+          <span className={clsx("inline-flex items-center", childrenClass)}>{label || children}</span>
           {rightIcon && <span className="-mr-0.5">{rightIcon}</span>}
           {loading && <span className="sr-only">Loading</span>}
         </Link>
@@ -174,7 +175,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
       >
         {loading && Spinner}
         {leftIcon && <span className="-ml-0.5">{leftIcon}</span>}
-        <span className={clsx("inline-flex items-center", childrenClass)}>{label||children}</span>
+        <span className={clsx("inline-flex items-center", childrenClass)}>{label || children}</span>
         {rightIcon && <span className="-mr-0.5">{rightIcon}</span>}
         {loading && <span className="sr-only">Loading</span>}
       </button>

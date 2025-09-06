@@ -1,16 +1,24 @@
+// next.config.ts
 import type { NextConfig } from "next";
 
+const raw = process.env.BACKEND_URL ?? "http://localhost:5000";  // fallback for dev
+const backend = raw.replace(/\/$/, "");                          // trim trailing slash
+
+if (!/^https?:\/\//.test(backend)) {
+  throw new Error(
+    `BACKEND_URL must include protocol, e.g. "http://localhost:5000". Got: ${backend}`
+  );
+}
+
 const nextConfig: NextConfig = {
-  /* config options here */
   async rewrites() {
     return [
       {
-        // Frontend calls /api/backend/... and Next proxies to your real backend
         source: "/api/backend/:path*",
-        destination: `${process.env.BACKEND_URL}/:path*`, // e.g. http://localhost:5000
+        destination: `${backend}/:path*`,
       },
     ];
-  }
+  },
 };
 
 export default nextConfig;
