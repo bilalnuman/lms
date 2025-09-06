@@ -4,7 +4,7 @@ import type { FieldConfig } from "@/types";
 import { batches, Education_Type } from "./json-data";
 import { classes } from "@/helpers/classes";
 import { sessions } from "@/utils/session-generator";
-import { SelectOption } from "../Select";
+import { SelectOption } from "../widgets/Select";
 
 
 export type SectionConfig = {

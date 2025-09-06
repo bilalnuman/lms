@@ -14,7 +14,7 @@ const Profile = () => {
       classNames={{
         label: "w-9 h-9 bg-indigo-default rounded-full"
       }}
-      dropdown={{ right: 15, left: "unset"}}
+      dropdown={{ right: 15, left: "unset",top:25}}
     >
       <Button variant='ghost' as='a' href='/' leftIcon={<IoSettingsOutline size={20} className='text-dark-default'/>}>
         Change password</Button>

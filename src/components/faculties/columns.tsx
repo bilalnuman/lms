@@ -4,7 +4,7 @@ import { buildColumnsFromData } from "@/utils/columnGenerator";
 import { Faculty } from "./types";
 import { Column } from "../datatable";
 import { columnOorder } from "./json-data";
-import TableActions from "../TableActions";
+import TableActions from "../widgets/TableActions";
 type SortDir = "asc" | "desc" | null;
 
 

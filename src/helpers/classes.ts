@@ -1,4 +1,4 @@
-import { SelectOption } from "@/components/Select";
+import { SelectOption } from "@/components/widgets/Select";
 import { ordinal } from "./ordinal";
 
 const maxYear = 6;

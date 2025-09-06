@@ -8,9 +8,9 @@ import {
     type FacultyFormValues,
 } from "./facultyForm.config";
 
-import { Input } from "@/components/Input";
-import { Select } from "@/components/Select";
-import { Button } from "@/components/Button";
+import { Input } from "@/components/widgets/Input";
+import { Select } from "@/components/widgets/Select";
+import { Button } from "@/components/widgets/Button";
 import clsx from "clsx";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import useFilePicker from "@/hooks/useFilePicker";

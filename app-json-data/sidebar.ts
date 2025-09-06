@@ -6,7 +6,7 @@ import { FaClock } from "react-icons/fa";
 
 
 export const sidebarItems: NavItem[] = [
-    { title: "dashboard", href: "/", icon: IoPieChartSharp, exact: true },
+    { title: "dashboard", href: "/dashboard", icon: IoPieChartSharp, exact: true },
     { title: "student list", href: "/students", icon: HiUsers, exact: true },
     { title: "faculty list", href: "/faculties", icon: HiUsers, exact: true },
     {
@@ -76,5 +76,6 @@ export const sidebarItems: NavItem[] = [
             { title: "Logout", href: "/logout", icon: HiUsers, },
         ]
     },
+    { title: "Widgets", href: "/widgets", icon: HiUsers, exact: true },
 
 ];

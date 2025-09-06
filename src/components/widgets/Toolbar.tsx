@@ -5,8 +5,8 @@ import Input from './Input'
 import { Button } from './Button'
 import { LuRefreshCw } from 'react-icons/lu'
 import { FaRegListAlt } from 'react-icons/fa'
-import ColumnVisibility from './datatable/ColumnVisibility'
-import ExportOptions from './students/ExportOptions'
+import ColumnVisibility from '../datatable/ColumnVisibility'
+import ExportOptions from '../students/ExportOptions'
 import { BULK_ACTIONS } from '@/utils/app-json.data'
 
 export interface ToolbarProps {

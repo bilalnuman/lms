@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { Column } from "../datatable";
-import { SelectOption } from "../Select";
+import { SelectOption } from "../widgets/Select";
 
 export type Option = { label: string; value: string | number };
 

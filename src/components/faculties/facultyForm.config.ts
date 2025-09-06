@@ -55,8 +55,10 @@ export const facultySchema = z.object({
   pmdc: z.string().min(1, "PMDC # is required"),
   date_of_joining: z.string().min(1, "Date of Joining is required"),
   biomatric: z.coerce.number().optional(),
+  // @ts-ignore
   gender: z.enum(["male", "female", "other"], { required_error: "Gender is required" }),
   date_Of_birth: z.string().min(1, "Date of Birth is required"),
+  // @ts-ignore
   marital_status: z.enum(["single", "married", "divorced", "widowed"], { required_error: "Marital Status is required" }),
   nationality: z.string().min(1, "Nationality is required"),
   cnic: z.string().min(1, "CNIC is required"),

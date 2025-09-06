@@ -1,17 +1,17 @@
 "use client";
 import * as React from "react";
 import { useTableKit } from "@/components/tablekit/useTableKit";
-import { Select } from "@/components/Select";
-import { Input } from "@/components/Input";
-import { Button } from "@/components/Button";
+import { Select } from "@/components/widgets/Select";
+import { Input } from "@/components/widgets/Input";
+import { Button } from "@/components/widgets/Button";
 import { Column } from "@/components/datatable";
 import { FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import { buildStudentColumns, type Student as StudentRow } from "./columns";
 import { status } from "./json-data";
 import { sessions } from "@/utils/session-generator";
-import Toolbar from "../Toolbar";
-import TableWidget from "../TableWidget";
+import Toolbar from "../widgets/Toolbar";
+import TableWidget from "../widgets/TableWidget";
 import { classes } from "../classes/json-data";
 
 export const filterOptions = {

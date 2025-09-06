@@ -1,5 +1,5 @@
 import { ordinal } from "@/helpers/ordinal";
-import { SelectOption } from "../Select";
+import { SelectOption } from "../widgets/Select";
 
 const statusLabels = ["active", "left", "detainee", "migrated"];
 

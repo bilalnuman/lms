@@ -80,3 +80,75 @@ table .actions button:first-child svg{
 .faculty-form textarea {
   @apply h-auto
 }
+
+
+
+/* -------- WebKit (Chrome, Edge, Safari) -------- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  /* Paint over the yellow/blue autofill background */
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+
+  /* Ensure text stays readable */
+  -webkit-text-fill-color: #111827;
+  caret-color: #111827;
+
+  /* Keep override after autofill animates in */
+  transition: background-color 9999s ease-out, color 9999s ease-out;
+}
+
+/* -------- Firefox -------- */
+input:-moz-autofill,
+textarea:-moz-autofill,
+select:-moz-autofill {
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  -moz-text-fill-color: #111827;
+  caret-color: #111827;
+}
+
+/* -------- Optional: Dark mode variant -------- */
+@media (prefers-color-scheme: dark) {
+  input, textarea, select {
+    background: #0B1220;   /* near slate-900 */
+    color: #F3F4F6;        /* near gray-100 */
+    border-color: #374151;
+    caret-color: #F3F4F6;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #0B1220 inset;
+    box-shadow: 0 0 0 1000px #0B1220 inset;
+    -webkit-text-fill-color: #F3F4F6;
+    caret-color: #F3F4F6;
+  }
+
+  input:-moz-autofill,
+  textarea:-moz-autofill,
+  select:-moz-autofill {
+    box-shadow: 0 0 0 1000px #0B1220 inset;
+    -moz-text-fill-color: #F3F4F6;
+    caret-color: #F3F4F6;
+  }
+}
+
+/* -------- Optional: force light UA colors on inputs (can fix odd iOS/Safari tints) -------- */
+/* Add class="force-light-autofill" to inputs that should always look light */
+.force-light-autofill {
+  color-scheme: light;
+}

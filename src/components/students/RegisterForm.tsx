@@ -9,15 +9,13 @@ import {
     type FieldConfig,
 } from "./studentForm.config";
 
-import { Input } from "@/components/Input";        // ← your Input
-import { Select } from "@/components/Select";      // ← your Select
-import { Button } from "@/components/Button";      // ← your Button
+import { Input } from "@/components/widgets/Input";
+import { Select } from "@/components/widgets/Select";
+import { Button } from "@/components/widgets/Button";
 import clsx from "clsx";
 import { IoCalendarClearOutline } from "react-icons/io5";
 import useFilePicker from "@/hooks/useFilePicker";
 import { FaCamera } from "react-icons/fa";
-
-// Simple radio group that matches our config
 function RadioGroup({
     name,
     label,
@@ -60,7 +58,7 @@ function RadioGroup({
     );
 }
 
-// Render a single field from config
+
 function Field({
     field,
     control,

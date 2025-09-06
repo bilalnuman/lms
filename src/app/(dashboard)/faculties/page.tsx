@@ -1,11 +1,11 @@
 "use client";
 import * as React from "react";
 import { useTableKit } from "@/components/tablekit/useTableKit";
-import { Button } from "@/components/Button";
+import { Button } from "@/components/widgets/Button";
 import { Column } from "@/components/datatable";
 import { FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
-import Toolbar from "@/components/Toolbar";
-import TableWidget from "@/components/TableWidget";
+import Toolbar from "@/components/widgets/Toolbar";
+import TableWidget from "@/components/widgets/TableWidget";
 import { Faculty } from "@/components/faculties/types";
 import { buildStudentColumns } from "@/components/faculties/columns";
 

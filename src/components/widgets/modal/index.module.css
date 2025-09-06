@@ -1,0 +1,36 @@
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10;
+}
+.closeBtn:hover{
+    color: brown !important
+}
+
+.buttons button {
+    transition: all 350ms ease-in-out;
+    border-radius: 10px;
+    padding: 0.4rem 0.8rem;
+    font-size: 14px;
+}
+
+.buttons button:first-child {
+    color: brown;
+    border: 1px solid brown;
+}
+
+.buttons button:first-child:hover {
+    color: white;
+    background:brown !important;
+}
+
+.buttons button:last-child{
+    color:rgb(35, 0, 130);
+    border: 1px solid rgb(35, 0, 130);
+}
+
+.buttons button:last-child:hover {
+    color: white;
+    background: rgb(35, 0, 130) !important;
+}

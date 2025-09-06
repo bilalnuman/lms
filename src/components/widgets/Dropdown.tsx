@@ -66,6 +66,10 @@ export function Dropdown({
         top: rect.bottom + window.scrollY + Number(dropdown?.top ?? 5),
         left,
       });
+      document.body.style.overflow = "hidden";
+    }
+    else {
+      document.body.style.overflow = "";
     }
   }, [open]);
 

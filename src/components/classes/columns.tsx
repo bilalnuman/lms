@@ -1,11 +1,11 @@
 "use client";
 import * as React from "react";
-import TableActions from "../TableActions";
+import TableActions from "../widgets/TableActions";
 import { buildColumnsFromData } from "@/utils/columnGenerator";
 import { withColumnOverrides } from "@/utils/column-overrides";
 import { columnOorder } from "./json-data";
 import type { Column } from "../datatable";
-import { Button } from "../Button";
+import { Button } from "../widgets/Button";
 import { IoPrintOutline } from "react-icons/io5";
 
 type SortDir = "asc" | "desc" | null;

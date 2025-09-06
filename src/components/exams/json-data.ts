@@ -1,5 +1,5 @@
 import { Option } from "@/types";
-import { SelectOption } from "../Select";
+import { SelectOption } from "../widgets/Select";
 import { ordinal } from "@/helpers/ordinal";
 import { sessions as sessionsGenerator } from "@/utils/session-generator";
 

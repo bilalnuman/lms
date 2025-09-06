@@ -1,7 +1,7 @@
 import React from 'react'
-import { ListView } from './ListView'
-import Pagination from './datatable/Pagination'
-import { DataTable } from './datatable'
+import { ListView } from '../ListView'
+import Pagination from '../datatable/Pagination'
+import { DataTable } from '../datatable'
 export interface TableWidgetProps {
     tk: any
 }

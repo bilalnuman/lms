@@ -1,6 +1,6 @@
 import React from "react";
-import { Dropdown } from "../Dropdown";
-import { Button } from "../Button";
+import { Dropdown } from "../widgets/Dropdown";
+import { Button } from "../widgets/Button";
 import { AiOutlineExport } from "react-icons/ai";
 import { exportOptions } from "@/utils/app-json.data";
 

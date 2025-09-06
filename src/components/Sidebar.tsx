@@ -6,8 +6,8 @@ import type { NavItem } from "@/types/sidebar";
 import { sidebarItems } from "../../app-json-data/sidebar";
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { IoChevronDown } from "react-icons/io5";
-import { Button } from "./Button";
-import NavLink from "./NavLink";
+import { Button } from "./widgets/Button";
+import NavLink from "./widgets/NavLink";
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -56,7 +56,7 @@ export function Sidebar() {
   return (
     <aside
       className={clsx(
-        "fixed top-0 h-screen border-r border-slate-200 pb-10 bg-gray-default pt-14 transition-all duration-200 overflow-x-auto scrollbar-hide",
+        "fixed top-0 h-screen border-r border-slate-200 pb-10 bg-gray-default pt-20 transition-all duration-200 overflow-x-auto scrollbar-hide",
         collapsed ? "w-16" : "w-56"
       )}
     >

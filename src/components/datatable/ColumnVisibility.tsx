@@ -1,8 +1,8 @@
 import React from "react";
-import { Dropdown } from "../Dropdown";
-import { Button } from "../Button";
+import { Dropdown } from "../widgets/Dropdown";
+import { Button } from "../widgets/Button";
 import { BiSolidDashboard } from "react-icons/bi";
-import Input from "../Input";
+import Input from "../widgets/Input";
 
 type Props = {
     columns: string[];

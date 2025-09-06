@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import TableActions from "../TableActions";
+import TableActions from "../widgets/TableActions";
 import { buildColumnsFromData } from "@/utils/columnGenerator";
 import { columnOorder, status } from "./json-data";
 import { Column } from "../datatable";

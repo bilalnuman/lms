@@ -1,11 +1,16 @@
-import React from 'react'
+import { LoginForm } from "@/components/auth";
 
-const page = () => {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams?: { next?: string };
+}) {
+  const next = decodeURIComponent(searchParams?.next ?? "/dashboard");
   return (
-    <div>
-      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptates explicabo in nemo ipsa nulla hic voluptate aspernatur beatae? Quod beatae nam incidunt nesciunt esse fuga quaerat labore numquam cum aperiam!
+    <div className="flex items-center justify-center h-screen">
+      <div className="w-[500px] p-4 border shadow rounded-lg">
+        <LoginForm next={next} />
+      </div>
     </div>
-  )
+  );
 }
-
-export default page

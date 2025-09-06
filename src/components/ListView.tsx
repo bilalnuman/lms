@@ -1,6 +1,6 @@
 import { ReactNode, useMemo } from "react";
 import { Column } from "./datatable";
-import TableActions from "./TableActions";
+import TableActions from "./widgets/TableActions";
 
 export function ListView<T extends Record<string, any>>({
     items,
