@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers/providers";
+import { ToastContainer } from "react-toastify";
 
 const archivo = Archivo({
   variable: "--font-archivo-sans",
@@ -24,6 +25,7 @@ export default function RootLayout({
         className={`${archivo.variable}  antialiased`}
       >
         <Providers>{children}</Providers>
+        <div className="relative z-[999999]"> <ToastContainer /></div>
       </body>
     </html>
   );

@@ -31,3 +31,10 @@ permissions?: Permission[];
 mode?: "all" | "any";
 };
 };
+
+export type LoginPayload = { email: string; password: string };
+export type LoginResponse = {
+  data?: { accessToken?: string; user?: any };
+  message?: string;
+  error?: string;
+};

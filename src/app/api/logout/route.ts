@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const AUTH_COOKIE = process.env.AUTH_COOKIE || "session";
+const AUTH_COOKIE = process.env.NEXT_PUBLIC_AUTH_COOKIE || "session";
 
 export async function POST() {
     // @ts-ignore

@@ -1,8 +1,8 @@
 // next.config.ts
 import type { NextConfig } from "next";
 
-const raw = process.env.BACKEND_URL ?? "http://localhost:5000";  // fallback for dev
-const backend = raw.replace(/\/$/, "");                          // trim trailing slash
+const raw = process.env.BACKEND_URL ?? "http://localhost:5000";
+const backend = raw.replace(/\/$/, ""); 
 
 if (!/^https?:\/\//.test(backend)) {
   throw new Error(

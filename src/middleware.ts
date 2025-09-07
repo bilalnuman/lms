@@ -11,8 +11,7 @@ import {
 } from "@/lib/access-control";
 
 
-export async function middleware(req: NextRequest) {   
-     
+export async function middleware(req: NextRequest) {
     const url = req.nextUrl;
     const pathname = url.pathname;
     const isApi = pathname.startsWith("/api/");
@@ -25,8 +24,6 @@ export async function middleware(req: NextRequest) {
 
     // 2) Extract user (from signed JWT cookie)
     const user = await getUserFromRequest(req);
-
-
     // 3) Prevent logged-in users from visiting auth-only pages
     if (user && isAuthRoute(pathname)) {
         const destination = DEFAULT_AFTER_LOGIN_ROUTE;

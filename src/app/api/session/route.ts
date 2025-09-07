@@ -1,7 +1,7 @@
 // src/app/api/session/route.ts   <-- or app/api/session/route.ts if no src/
 import { NextResponse } from "next/server";
 
-const AUTH_COOKIE = process.env.AUTH_COOKIE || "session";
+const AUTH_COOKIE = process.env.NEXT_PUBLIC_AUTH_COOKIE || "session";
 
 export async function GET() {
   // Handy to confirm the route exists in the browser

@@ -189,6 +189,7 @@ export default function RegisterForm() {
         formState: { errors, isSubmitting },
         reset,
     } = useForm<StudentFormValues>({
+        // @ts-ignore
         resolver: zodResolver(studentSchema),
         defaultValues,
         mode: "onBlur",
@@ -219,6 +220,7 @@ export default function RegisterForm() {
     };
 
     return (
+        // @ts-ignore
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 my-5" >
             {
                 formSections.map((sec, i) => (

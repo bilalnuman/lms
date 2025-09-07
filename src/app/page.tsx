@@ -1,16 +1,15 @@
-import { LoginForm } from "@/components/auth";
+import Loading from "@/components/widgets/Loading";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams?: { next?: string };
-}) {
-  // const next = decodeURIComponent(searchParams?.next ?? "/dashboard");
+const LoginForm = dynamic(() => import("@/components/auth/SignIn"))
+
+const page = () => {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="w-[500px] p-4 border shadow rounded-lg">
-        <LoginForm/>
-      </div>
-    </div>
+    <Suspense fallback={<Loading />}>
+      <LoginForm />
+    </Suspense>
   );
 }
+
+export default page

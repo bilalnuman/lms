@@ -98,7 +98,7 @@ export default function FacultytListing() {
 
     return (
         <div className="py-5 mt-10 relative">
-            <Button as="a" href="/faculties/register" size="sm" className="absolute end-0 -top-[60px] text-xs !rounded">Register new faculty</Button>
+            <Button as="a" href="/faculties/register" size="sm" className="absolute end-0 -top-[60px] text-xs !rounded" label="Register new faculty" />
 
 
             {/* Toolbar */}

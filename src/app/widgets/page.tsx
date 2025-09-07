@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/widgets/Button";
-import Form from "@/components/form/Form";
+import Form from "@/components/form";
 import Heading from "@/components/widgets/Heading";
 import Input from "@/components/widgets/Input";
 import Modal, { ModalRef } from "@/components/widgets/modal";
@@ -16,7 +16,7 @@ export default function Example() {
     const modalRef = useRef<ModalRef>(null);
     return (
         <>
-            <Button onClick={() => modalRef.current?.open()}>First Modal</Button>
+            <Button onClick={() => modalRef.current?.open()} label="Open Modal" />
 
             <Modal ref={modalRef}>
                 <Heading title="Registration" />
@@ -25,11 +25,11 @@ export default function Example() {
                     defaultValues={{ name: "bilal@gmail.com", email: "" }}
                     onSubmit={async (values) => {
                         console.log(values)
-                        modalRef.current?.close() 
+                        modalRef.current?.close()
                     }}
                 >
-                    {({ register,setValue,formState: { errors, isSubmitting } }) => {
-                        setValue("name","bilal")
+                    {({ register, setValue, formState: { errors, isSubmitting } }) => {
+                        setValue("name", "bilal")
                         return (
                             <div className="flex flex-col gap-4">
                                 <Input label="Name"  {...register("name")}
@@ -42,9 +42,8 @@ export default function Example() {
                                 />
                                 <Button
                                     type="submit"
-                                >
-                                    {isSubmitting ? "Saving..." : "Save"}
-                                </Button>
+                                    label={isSubmitting ? "Saving..." : "Save"}
+                                />
                             </div>
                         )
                     }}

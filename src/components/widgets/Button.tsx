@@ -13,7 +13,7 @@ type CommonProps = {
   rightIcon?: React.ReactNode;
   className?: string;
   childrenClass?: string;
-  label: string | ReactNode,
+  label?: string | ReactNode,
   children?: ReactNode
 };
 

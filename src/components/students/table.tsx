@@ -67,7 +67,9 @@ export default function StudentListing() {
 
     return (
         <div className="py-5 mt-3 relative">
-            <Button as="a" href="/students/register" size="sm" className="absolute end-0 -top-[30px] text-xs !rounded">Register new student</Button>
+            <Button as="a" href="/students/register" size="sm" className="absolute end-0 -top-[30px] text-xs !rounded"
+                label="Register new student"
+            />
             {/* Filters */}
             <div className="mb-10 grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {(Object.keys(filterOptions || {})).map((key: any) => {

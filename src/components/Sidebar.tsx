@@ -31,8 +31,8 @@ export function Sidebar() {
   }, []);
 
   useEffect(() => {
-    const body=document.querySelector('body');
-    collapsed?(body?.classList.add("hide"),setOpenKey(null)):body?.classList.remove("hide")
+    const body = document.querySelector('body');
+    collapsed ? (body?.classList.add("hide"), setOpenKey(null)) : body?.classList.remove("hide")
     localStorage.setItem("sidebar-collapsed", String(collapsed));
   }, [collapsed]);
 
@@ -65,15 +65,14 @@ export function Sidebar() {
           variant="ghost"
           onClick={() => setCollapsed((v) => !v)}
           className="ms-auto my-1 !h-fit !p-0 hover:bg-transparent"
-        >
-          <FaRegArrowAltCircleLeft
+          label={<FaRegArrowAltCircleLeft
             size={20}
             className={clsx(
               "transition-transform duration-700 text-dark-default",
               collapsed && "rotate-180"
             )}
-          />
-        </Button>
+          />}
+        />
 
         <nav className="space-y-1">
           {sidebarItems.map((item: NavItem) => {
@@ -95,7 +94,7 @@ export function Sidebar() {
                     collapsed && "!justify-center",
                     activeParent && !activeChild && "bg-slate-100 text-dark-default",
                     activeChild && "bg-white text-dark-default",
-                    
+
                   )}
                   leftIcon={<Icon size={20} />}
                   rightIcon={

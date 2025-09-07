@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { SignJWT } from "jose";
 import { z } from "zod";
 
-const AUTH_COOKIE = process.env.AUTH_COOKIE || "session";
+const AUTH_COOKIE = process.env.NEXT_PUBLIC_AUTH_COOKIE || "session";
 const AUTH_SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
 
 const bodySchema = z.object({

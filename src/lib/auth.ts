@@ -1,11 +1,8 @@
-// auth.ts
 import { NextRequest } from "next/server";
 import { jwtVerify, type JWTPayload, createRemoteJWKSet } from "jose";
-const AUTH_COOKIE = process.env.AUTH_COOKIE??""
-const AUTH_SECRET = process.env.AUTH_SECRET
+const AUTH_COOKIE = process.env.NEXT_PUBLIC_AUTH_COOKIE??""
+const AUTH_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET
 const AUTH_JWKS_URL = process.env.AUTH_JWKS_URL;
-
-
 
 export type SessionUser = {
   id: string;
@@ -55,6 +52,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<SessionUser 
 
     return { id, roles, permissions, raw: payload };
   } catch {
+    console.log("sfdghjkgfdsadfghjgfdsfgh")
     return null;
   }
 }
