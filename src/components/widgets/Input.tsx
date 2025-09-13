@@ -11,7 +11,7 @@ type Variant = "outline" | "filled" | "ghost";
 type UIProps = {
   label?: React.ReactNode;
   description?: React.ReactNode;
-  error?: boolean | React.ReactNode;
+  error?:any;
   success?: boolean;
   readonly?: boolean;
 
@@ -52,7 +52,7 @@ type UIProps = {
     label?: string;
     input?: string;
     description?: string;
-    error?: string;
+    error?: string ;
     counter?: string;
     errorIcon?: string;
     clearIcon?: string;
@@ -299,8 +299,7 @@ export const Input = React.forwardRef<
         <label
           htmlFor={inputId}
           className={clsx(
-            "mb-1 block text-sm font-medium",
-            error ? "text-red-600" : "text-slate-900",
+            "mb-1 block text-sm font-medium text-slate-900",
             classNames.label
           )}
         >
@@ -310,7 +309,7 @@ export const Input = React.forwardRef<
       )}
 
       <>
-        <div className={clsx("relative", classNames.container)}>
+        <div className={clsx("relative flex", classNames.container)}>
           {leftSection && (
             <div
               className={clsx(
@@ -364,14 +363,14 @@ export const Input = React.forwardRef<
               type="button"
               onClick={handleClear}
               className={clsx(
-                "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-900",
+                "absolute inset-y-0 right-1 z-10 my-1 flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900",
                 (computedToggle || hasPickerBtn) && "right-9",
                 classNames.clearIcon
               )}
               aria-label="Clear input"
               tabIndex={-1}
             >
-              ×
+              <span aria-hidden className="inline-flex select-none text-current">✕</span>
             </button>
           )}
 

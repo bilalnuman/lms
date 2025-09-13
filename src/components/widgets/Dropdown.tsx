@@ -1,15 +1,13 @@
 "use client";
 import { useState, useRef, useEffect, CSSProperties } from "react";
-import clsx from "clsx";
-import { IoChevronDown } from "react-icons/io5";
-import { Portal } from "./Portal";
+import { createPortal } from "react-dom";
 
 interface Props {
   children: React.ReactNode;
   label?: string | React.ReactNode;
   portalTarget?: HTMLElement | null;
   portalId?: string;
-  closeOnSelect?: boolean; // NEW: default true
+  closeOnSelect?: boolean;
   classNames?: {
     button?: string;
     label?: string;
@@ -28,7 +26,6 @@ interface Props {
     maxWidth?: number;
     minHeight?: number;
     minWidth?: number;
-    // overflow settings
     overflow?: CSSProperties["overflow"];
     overflowX?: CSSProperties["overflowX"];
     overflowY?: CSSProperties["overflowY"];
@@ -42,14 +39,12 @@ export function Dropdown({
   portalId,
   classNames,
   dropdown,
-  closeOnSelect = true, // default behavior
+  closeOnSelect = true,
 }: Props) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null); // NEW
+  const menuRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
-
-  // calculate position
   useEffect(() => {
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -67,13 +62,12 @@ export function Dropdown({
         left,
       });
       document.body.style.overflow = "hidden";
-    }
-    else {
+    } else {
       document.body.style.overflow = "";
     }
-  }, [open]);
+  }, [open, dropdown]);
 
-  // close on outside click (but not when clicking inside the menu)
+  // Close when clicking outside
   useEffect(() => {
     if (!open) return;
     function handleDown(e: MouseEvent) {
@@ -85,8 +79,6 @@ export function Dropdown({
     document.addEventListener("mousedown", handleDown);
     return () => document.removeEventListener("mousedown", handleDown);
   }, [open]);
-
-  // close when selecting an item (delegated)
   const handleMenuClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!closeOnSelect) return;
     const target = e.target as HTMLElement;
@@ -97,28 +89,34 @@ export function Dropdown({
   };
 
   return (
-    <div className={clsx("relative inline-block", classNames?.container)}>
-      {/* trigger */}
+    <div className={`relative inline-block ${classNames?.container ?? ""}`}>
       <button
         ref={buttonRef}
         onClick={() => setOpen((v) => !v)}
-        className={clsx("inline-flex items-center rounded-md cursor-pointer", classNames?.button)}
+        className={`inline-flex items-center rounded-md cursor-pointer ${classNames?.button ?? ""}`}
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <span className={clsx("flex items-center justify-center text-sm", classNames?.label)}>
+        <span
+          className={`flex items-center justify-center text-sm ${classNames?.label ?? ""}`}
+        >
           {label}
         </span>
-        <IoChevronDown
-          className={clsx(
-            "ml-1 transition-transform text-dark-default",
-            open && "rotate-180",
-            classNames?.icon
-          )}
-        />
+        <svg
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className={`ml-1 h-5 w-5 transition-transform text-black ${
+            open ? "rotate-180" : ""
+          } ${classNames?.icon ?? ""}`}
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+            clipRule="evenodd"
+          />
+        </svg>
       </button>
 
-      {/* menu */}
       {open && (
         <Portal target={portalTarget} targetId={portalId}>
           <div
@@ -126,7 +124,7 @@ export function Dropdown({
             onClick={handleMenuClick}
             style={{
               position: "absolute",
-              top:pos.top,
+              top: pos.top,
               left: dropdown?.left ?? pos.left,
               right: dropdown?.right,
               bottom: dropdown?.bottom,
@@ -135,16 +133,15 @@ export function Dropdown({
               maxHeight: dropdown?.maxHeight,
               maxWidth: dropdown?.maxWidth,
               minHeight: dropdown?.minHeight,
+              minWidth: buttonRef.current?.offsetWidth,
               overflow: dropdown?.overflow,
               overflowX: dropdown?.overflowX,
               overflowY: dropdown?.overflowY,
-              minWidth: buttonRef.current?.offsetWidth,
               zIndex: 50,
             }}
-            className={clsx(
-              "flex flex-col rounded-md border border-slate-200 bg-white p-2 shadow-lg max-h-[300px] overflow-auto",
-              classNames?.menu
-            )}
+            className={`flex flex-col rounded-md border border-slate-200 bg-white p-2 shadow-lg max-h-[300px] overflow-auto ${
+              classNames?.menu ?? ""
+            }`}
             role="menu"
           >
             {children}
@@ -153,4 +150,29 @@ export function Dropdown({
       )}
     </div>
   );
+}
+
+interface PortalProps {
+  children: React.ReactNode;
+  target?: HTMLElement | null;
+  targetId?: string;
+}
+
+export function Portal({ children, target, targetId }: PortalProps) {
+  const [mounted, setMounted] = useState(false);
+  const [element, setElement] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    if (target) {
+      setElement(target);
+    } else if (targetId) {
+      setElement(document.getElementById(targetId));
+    } else {
+      setElement(document.body);
+    }
+  }, [target, targetId]);
+
+  if (!mounted || !element) return null;
+  return createPortal(children, element);
 }

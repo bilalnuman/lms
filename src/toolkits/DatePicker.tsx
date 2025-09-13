@@ -1,3 +1,4 @@
+"use client";
 import React, {
   forwardRef,
   useCallback,
@@ -6,7 +7,9 @@ import React, {
   useMemo,
   useRef,
   useState,
+  KeyboardEvent,
 } from "react";
+
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 const isSameDay = (a: Date, b: Date) =>
@@ -20,7 +23,8 @@ const clamp = (d: Date, min?: Date, max?: Date) => {
 const addMonths = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth() + n, 1);
 const daysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate();
 const startOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
-const toISODate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const toISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 function getMonthGrid(base: Date, weekStartsOn: number = 0): Date[] {
   const first = startOfMonth(base);
@@ -66,7 +70,6 @@ export type DatePickerClassNames = {
   time?: string;
   clearButton?: string;
 };
-
 export type DatePickerIcons = {
   calendar?: React.ReactNode;
   clock?: React.ReactNode;
@@ -74,14 +77,14 @@ export type DatePickerIcons = {
   next?: React.ReactNode;
   clear?: React.ReactNode;
 };
-
 export type DisabledDatesProp = Array<Date | string | number> | ((date: Date) => boolean);
 
-export interface DatePickerProps {
-  name?: string;
+export interface DatePickerProps
+  extends Pick<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "onBlur" | "name"> {
+  onValueChange?: (value: Date | Date[] | null) => void;
+
   value?: Date | Date[] | null;
   defaultValue?: Date | Date[] | null;
-  onChange?: (value: Date | Date[] | null) => void;
   multiple?: boolean;
   isDateTime?: boolean;
   use12Hour?: boolean;
@@ -90,7 +93,7 @@ export interface DatePickerProps {
   placeholder?: string;
   format?: string;
   weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
+  required?: boolean;
   disablePast?: boolean;
   disableFuture?: boolean;
   minDate?: Date;
@@ -98,15 +101,26 @@ export interface DatePickerProps {
   disabledDates?: DisabledDatesProp;
   classNames?: DatePickerClassNames;
   icons?: DatePickerIcons;
-  error?: string,
-
+  error?: string;
+  label?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
+
 const DefaultIcon = ({ children }: { children: string }) => (
   <span aria-hidden className="inline-flex select-none text-current">{children}</span>
 );
 
+function customFormat(d: Date, fmt: string) {
+  const map: Record<string, string> = {
+    YYYY: String(d.getFullYear()),
+    MM: String(d.getMonth() + 1).padStart(2, "0"),
+    DD: String(d.getDate()).padStart(2, "0"),
+    HH: String(d.getHours()).padStart(2, "0"),
+    mm: String(d.getMinutes()).padStart(2, "0"),
+  };
+  return fmt.replace(/YYYY|MM|DD|HH|mm/g, (m) => map[m]);
+}
 function formatDisplay(dates: Date | Date[] | null | undefined, fmt?: string, hour12?: boolean) {
   if (!dates) return "";
   const format = (d: Date) => {
@@ -122,17 +136,6 @@ function formatDisplay(dates: Date | Date[] | null | undefined, fmt?: string, ho
   };
   return Array.isArray(dates) ? dates.map(format).join(", ") : format(dates);
 }
-function customFormat(d: Date, fmt: string) {
-  const map: Record<string, string> = {
-    YYYY: String(d.getFullYear()),
-    MM: String(d.getMonth() + 1).padStart(2, "0"),
-    DD: String(d.getDate()).padStart(2, "0"),
-    HH: String(d.getHours()).padStart(2, "0"),
-    mm: String(d.getMinutes()).padStart(2, "0"),
-  };
-  return fmt.replace(/YYYY|MM|DD|HH|mm/g, (m) => map[m]);
-}
-
 function normalizeDisabledPredicate(disabledDates?: DisabledDatesProp) {
   if (!disabledDates) return () => false;
   if (typeof disabledDates === "function") return disabledDates;
@@ -153,15 +156,21 @@ function normalizeDisabledPredicate(disabledDates?: DisabledDatesProp) {
 
 const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function DatePickerImpl(
   {
+    // RHF register props
     name,
+    onChange: rhfOnChange,
+    onBlur: rhfOnBlur,
+
+    // App props
+    onValueChange,
     value,
     defaultValue = null,
-    onChange,
     multiple = false,
     isDateTime = false,
     use12Hour = false,
     disabled = false,
     readOnly = false,
+    required = false,
     placeholder = "Select date",
     format,
     weekStartsOn = 0,
@@ -171,6 +180,7 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
     maxDate,
     disabledDates,
     classNames,
+    label,
     icons,
     open,
     error,
@@ -197,11 +207,12 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
   }, [open]);
   const setOpen = useCallback(
     (v: boolean) => {
-      if (onOpenChange) onOpenChange(v);
+      onOpenChange?.(v);
       if (open === undefined) setIsOpen(v);
     },
     [onOpenChange, open]
   );
+
   const min = useMemo(() => (disablePast ? startOfDay(new Date()) : minDate), [disablePast, minDate]);
   const max = useMemo(() => (disableFuture ? endOfDay(new Date()) : maxDate), [disableFuture, maxDate]);
   const isOutsideRange = useCallback(
@@ -209,19 +220,31 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
     [min, max]
   );
   const disabledPred = useMemo(() => normalizeDisabledPredicate(disabledDates), [disabledDates]);
-  const isDisabled = useCallback(
-    (d: Date) => isOutsideRange(d) || disabledPred(d),
-    [isOutsideRange, disabledPred]
+  const isDisabled = useCallback((d: Date) => isOutsideRange(d) || disabledPred(d), [isOutsideRange, disabledPred]);
+
+  const displayValue = useMemo(
+    () => formatDisplay(selected, format, isDateTime && use12Hour ? true : undefined),
+    [selected, format, isDateTime, use12Hour]
   );
 
-  const displayValue = useMemo(() => formatDisplay(selected, format, isDateTime && use12Hour ? true : undefined), [selected, format, isDateTime, use12Hour]);
+  const serialize = (next: Date | Date[] | null) => {
+    if (!next) return "";
+    const to = (d: Date) => d.toISOString();
+    return Array.isArray(next) ? next.map(to).join(",") : to(next);
+  };
 
   const commit = useCallback(
     (next: Date | Date[] | null) => {
       if (!inControlled) setInternal(next);
-      onChange?.(next);
+      onValueChange?.(next);
+      if (typeof rhfOnChange === "function" && name) {
+        rhfOnChange({
+          target: { value: serialize(next), name },
+          type: "change",
+        } as unknown as React.ChangeEvent<HTMLInputElement>);
+      }
     },
-    [inControlled, onChange]
+    [inControlled, onValueChange, rhfOnChange, name]
   );
 
   const toggleDate = useCallback(
@@ -234,7 +257,8 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
         else arr.push(clamp(d, min, max));
         commit(arr.length ? arr : null);
       } else {
-        const next = selected && !Array.isArray(selected) && isSameDay(selected, d) ? null : clamp(d, min, max);
+        const next =
+          selected && !Array.isArray(selected) && isSameDay(selected, d) ? null : clamp(d, min, max);
         commit(next);
         if (!isDateTime) setOpen(false);
       }
@@ -253,18 +277,72 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
     },
     [selected, commit, multiple]
   );
+
   const onInputClick = () => {
     if (disabled || readOnly) return;
     setOpen(!isOpen);
   };
 
+  // ---------- SMART PLACEMENT (flip) ----------
+  type Placement = "bottom" | "top";
+  const [placement, setPlacement] = useState<Placement>("bottom");
+  const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
+
+  const anchorRef = useRef<HTMLDivElement | null>(null);      // wraps the visible input
   const popoverRef = useOutsideClick<HTMLDivElement>(() => setOpen(false));
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const compute = () => {
+      const anchor = anchorRef.current;
+      const pop = popoverRef.current;
+      if (!anchor) return;
+
+      const rect = anchor.getBoundingClientRect();
+      const viewportH = window.innerHeight;
+      const spaceBelow = Math.max(0, viewportH - rect.bottom);
+      const spaceAbove = Math.max(0, rect.top);
+      const desired = pop?.offsetHeight || 320; // fallback guess
+
+      // choose side with enough room or the larger side
+      const nextPlacement: Placement =
+        spaceBelow >= desired || spaceBelow >= spaceAbove ? "bottom" : "top";
+      setPlacement(nextPlacement);
+
+      // clamp popover height so it always fits
+      const padding = 8; // breathing room from edges
+      const available = (nextPlacement === "bottom" ? spaceBelow : spaceAbove) - padding;
+      setMaxHeight(Math.max(200, available)); // min 200px so layout stays nice
+    };
+
+    // initial measure on open
+    requestAnimationFrame(compute);
+
+    // recompute on resize / scroll (capture to catch scrollable parents)
+    window.addEventListener("resize", compute);
+    window.addEventListener("scroll", compute, true);
+
+    // observe size changes of anchor/popover for dynamic content
+    const ro = new ResizeObserver(compute);
+    if (anchorRef.current) ro.observe(anchorRef.current);
+    if (popoverRef.current) ro.observe(popoverRef.current);
+
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+      ro.disconnect();
+    };
+  }, [isOpen, popoverRef]);
+  // -------------------------------------------
+
   const [focused, setFocused] = useState<Date | null>(null);
   useEffect(() => {
-    if (isOpen && !focused) setFocused(Array.isArray(selected) ? selected[0] ?? new Date() : selected ?? new Date());
+    if (isOpen && !focused)
+      setFocused(Array.isArray(selected) ? selected[0] ?? new Date() : selected ?? new Date());
   }, [isOpen, selected, focused]);
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyDownInput = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen && (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
       setOpen(true);
@@ -326,13 +404,11 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
   }, [weekStartsOn]);
 
   const grid = useMemo(() => getMonthGrid(month, weekStartsOn), [month, weekStartsOn]);
-  const hiddenValue = useMemo(() => {
-    if (!selected) return "";
-    const serialize = (d: Date) => d.toISOString();
-    return Array.isArray(selected) ? selected.map(serialize).join(",") : serialize(selected);
-  }, [selected]);
 
-  const cn = (slot: keyof DatePickerClassNames, fallback: string) => [fallback, classNames?.[slot]].filter(Boolean).join(" ");
+  const hiddenValue = useMemo(() => serialize(selected), [selected]);
+
+  const cn = (slot: keyof DatePickerClassNames, fallback: string) =>
+    [fallback, classNames?.[slot]].filter(Boolean).join(" ");
 
   const PrevIcon = icons?.prev ?? <DefaultIcon>{"‹"}</DefaultIcon>;
   const NextIcon = icons?.next ?? <DefaultIcon>{"›"}</DefaultIcon>;
@@ -348,12 +424,19 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
   return (
     <div className={cn("root", "relative inline-flex w-full")}>
       <div className="w-full">
-        <div className="relative flex-1">
+        {label && (
+          <label htmlFor={name} className="mb-1 block text-sm font-medium text-slate-900">
+            {label}
+            {required && <span className="ml-0.5 text-rose-600">*</span>}
+          </label>
+        )}
+
+        {/* Anchor wraps the visible input; used for measuring placement */}
+        <div ref={anchorRef} className="relative flex-1">
+          {/* Visible read-only display input */}
           <input
-            ref={ref}
-            name={name}
             value={displayValue}
-            onKeyDown={onKeyDown}
+            onKeyDown={onKeyDownInput}
             onClick={onInputClick}
             readOnly
             disabled={disabled}
@@ -366,6 +449,7 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
             )}
           />
           <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">{CalIcon}</span>
+
           {!!selected && !readOnly && (
             <button
               type="button"
@@ -376,15 +460,26 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
               }}
               className={cn(
                 "clearButton",
-                "absolute right-10 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:bg-slate-100"
+                "absolute end-6 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full p-1 text-slate-500 hover:bg-slate-100"
               )}
             >
               {ClearIcon}
             </button>
           )}
-          {name && <input type="hidden" name={`${name}__raw`} value={hiddenValue} />}
+
+          {/* RHF hidden input */}
+          {name && (
+            <input
+              type="hidden"
+              name={name}
+              value={hiddenValue}
+              ref={ref}
+              onBlur={rhfOnBlur}
+            />
+          )}
         </div>
-        <p className="text-red-600 text-xs">{error}</p>
+
+        {error && <p className="text-red-600 text-xs">{error}</p>}
       </div>
 
       {isOpen && (
@@ -396,8 +491,13 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
           onKeyDown={onGridKeyDown}
           className={cn(
             "popover",
-            "absolute z-50 mt-2 w-[22rem] rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
+            // ↓ flip logic changes position classes
+            `absolute z-50 ${placement === "bottom" ? "top-full mt-2" : "bottom-full mb-2"} w-[22rem] rounded-xl border border-slate-200 bg-white p-3 shadow-xl`
           )}
+          style={{
+            maxHeight: maxHeight, // clamp to available space
+            overflow: maxHeight ? "auto" : undefined,
+          }}
         >
           <div className={cn("header", "mb-2 flex items-center justify-between")}>
             <button
@@ -409,7 +509,7 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
               onClick={() => setMonth((m) => addMonths(m, -1))}
               aria-label="Previous month"
             >
-              {PrevIcon}
+              {icons?.prev ?? <DefaultIcon>{"‹"}</DefaultIcon>}
             </button>
             <div id={`${id}-label`} className="select-none text-sm font-semibold">
               {monthLabel}
@@ -423,18 +523,22 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
               onClick={() => setMonth((m) => addMonths(m, +1))}
               aria-label="Next month"
             >
-              {NextIcon}
+              {icons?.next ?? <DefaultIcon>{"›"}</DefaultIcon>}
             </button>
           </div>
 
+          {/* Calendar */}
           <div className={cn("calendar", "select-none")}>
             <div className="mb-1 grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
-              {weekdays.map((w) => (
-                <div key={w}>{w}</div>
-              ))}
+              {Array.from({ length: 7 }).map((_, i) => {
+                const base = new Date(2021, 7, 1);
+                const d = new Date(base);
+                d.setDate(base.getDate() + ((i + (weekStartsOn ?? 0)) % 7));
+                return <div key={i}>{d.toLocaleDateString(undefined, { weekday: "short" })}</div>;
+              })}
             </div>
             <div role="grid" aria-label="Calendar" className="grid grid-cols-7 gap-1">
-              {grid.map((d) => {
+              {getMonthGrid(month, weekStartsOn).map((d) => {
                 const outside = d.getMonth() !== month.getMonth();
                 const disabledCell = isDisabled(d);
                 const selectedArr = Array.isArray(selected) ? selected : selected ? [selected] : [];
@@ -448,20 +552,19 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
                     aria-selected={isSelected}
                     disabled={disabledCell}
                     onClick={() => toggleDate(d)}
-                    onMouseEnter={() => setFocused(d)}
-                    className={cn(
-                      "day",
-                      [
-                        "h-9 w-9 rounded-md text-sm leading-9",
-                        "focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                        "transition-colors",
-                        outside ? "text-slate-400" : "text-slate-800",
-                        isSelected && "bg-indigo-600 text-white hover:bg-indigo-600",
-                        !isSelected && !disabledCell && "hover:bg-slate-100",
-                        disabledCell && "cursor-not-allowed text-slate-300",
-                        isToday && !isSelected && "ring-1 ring-indigo-500",
-                      ].join(" ")
-                    )}
+                    onMouseEnter={() => {
+                      /* keep focus semantics if you add roving focus */
+                    }}
+                    className={[
+                      "h-9 w-9 rounded-md text-sm leading-9",
+                      "focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                      "transition-colors",
+                      outside ? "text-slate-400" : "text-slate-800",
+                      isSelected ? "bg-indigo-600 text-white hover:bg-indigo-600" : "",
+                      !isSelected && !disabledCell ? "hover:bg-slate-100" : "",
+                      disabledCell ? "cursor-not-allowed opacity-50 text-slate-300" : "",
+                      isToday && !isSelected ? "ring-1 ring-indigo-500" : "",
+                    ].join(" ")}
                   >
                     {d.getDate()}
                   </button>
@@ -469,11 +572,15 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
               })}
             </div>
           </div>
+
+          {/* Time picker */}
           {isDateTime && !multiple && (
-            <div className={cn("time", "mt-3 flex items-center justify-between rounded-lg bg-slate-50 p-2")}
-              aria-label="Time selection">
+            <div
+              className={cn("time", "mt-3 flex items-center justify-between rounded-lg bg-slate-50 p-2")}
+              aria-label="Time selection"
+            >
               <div className="flex items-center gap-2 text-slate-700">
-                <span>{ClockIcon}</span>
+                <span>{icons?.clock ?? <DefaultIcon>{"🕒"}</DefaultIcon>}</span>
                 <span className="text-sm font-medium">Time</span>
               </div>
               <div className="flex items-center gap-2">
@@ -499,9 +606,11 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
                       }}
                     >
                       {Array.from({ length: 12 }).map((_, idx) => {
-                        const h12 = idx + 1; // 1..12
+                        const h12 = idx + 1;
                         return (
-                          <option key={h12} value={h12}>{String(h12).padStart(2, "0")}</option>
+                          <option key={h12} value={h12}>
+                            {String(h12).padStart(2, "0")}
+                          </option>
                         );
                       })}
                     </select>
@@ -521,7 +630,9 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
                       }}
                     >
                       {Array.from({ length: 60 }).map((_, m) => (
-                        <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
+                        <option key={m} value={m}>
+                          {String(m).padStart(2, "0")}
+                        </option>
                       ))}
                     </select>
                     <select
@@ -536,7 +647,7 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
                         const s = Array.isArray(selected) ? selected[0] : selected;
                         if (!s) return;
                         const makePM = e.target.value === "PM";
-                        const base = s.getHours() % 12; // 0..11
+                        const base = s.getHours() % 12;
                         const newH24 = base + (makePM ? 12 : 0);
                         setTime(newH24, s.getMinutes());
                       }}
@@ -554,13 +665,20 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
                         const s = Array.isArray(selected) ? selected[0] : selected;
                         return s ? s.getHours() : 0;
                       })()}
-                      onChange={(e) => setTime(Number(e.target.value), (() => {
-                        const s = Array.isArray(selected) ? selected[0] : selected;
-                        return s ? s.getMinutes() : 0;
-                      })())}
+                      onChange={(e) =>
+                        setTime(
+                          Number(e.target.value),
+                          (() => {
+                            const s = Array.isArray(selected) ? selected[0] : selected;
+                            return s ? s.getMinutes() : 0;
+                          })()
+                        )
+                      }
                     >
                       {Array.from({ length: 24 }).map((_, h) => (
-                        <option key={h} value={h}>{String(h).padStart(2, "0")}</option>
+                        <option key={h} value={h}>
+                          {String(h).padStart(2, "0")}
+                        </option>
                       ))}
                     </select>
                     :
@@ -571,13 +689,20 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
                         const s = Array.isArray(selected) ? selected[0] : selected;
                         return s ? s.getMinutes() : 0;
                       })()}
-                      onChange={(e) => setTime((() => {
-                        const s = Array.isArray(selected) ? selected[0] : selected;
-                        return s ? s.getHours() : 0;
-                      })(), Number(e.target.value))}
+                      onChange={(e) =>
+                        setTime(
+                          (() => {
+                            const s = Array.isArray(selected) ? selected[0] : selected;
+                            return s ? s.getHours() : 0;
+                          })(),
+                          Number(e.target.value)
+                        )
+                      }
                     >
                       {Array.from({ length: 60 }).map((_, m) => (
-                        <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
+                        <option key={m} value={m}>
+                          {String(m).padStart(2, "0")}
+                        </option>
                       ))}
                     </select>
                   </>
@@ -602,76 +727,7 @@ const DatePickerImpl = forwardRef<HTMLInputElement, DatePickerProps>(function Da
 });
 
 DatePickerImpl.displayName = "DatePicker";
-
-const isDateEqual = (a?: Date | null, b?: Date | null) => {
-  if (a == null && b == null) return true;
-  if (!a || !b) return false;
-  return a.getTime() === b.getTime();
-};
-const isDateArrayEqual = (a?: Date[] | null, b?: Date[] | null) => {
-  if (!a && !b) return true;
-  if (!a || !b) return false;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].getTime() !== b[i].getTime()) return false;
-  }
-  return true;
-};
-const isValueEqual = (
-  a: Date | Date[] | null | undefined,
-  b: Date | Date[] | null | undefined
-) => {
-  const arrA = Array.isArray(a);
-  const arrB = Array.isArray(b);
-  if (arrA || arrB)
-    return isDateArrayEqual(arrA ? (a as Date[]) : null, arrB ? (b as Date[]) : null);
-  return isDateEqual((a as Date | null | undefined) ?? null, (b as Date | null | undefined) ?? null);
-};
-const isDisabledDatesEqual = (
-  a?: DisabledDatesProp,
-  b?: DisabledDatesProp
-) => {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  if (typeof a === "function" || typeof b === "function") return false;
-  const arrA = a as Array<Date | string | number>;
-  const arrB = b as Array<Date | string | number>;
-  if (arrA.length !== arrB.length) return false;
-  for (let i = 0; i < arrA.length; i++) {
-    const av = arrA[i];
-    const bv = arrB[i];
-    if (av instanceof Date && bv instanceof Date) {
-      if (av.getTime() !== bv.getTime()) return false;
-    } else if (av !== bv) return false;
-  }
-  return true;
-};
-
-const areEqual = (prev: DatePickerProps, next: DatePickerProps) => {
-  return (
-    isValueEqual(prev.value, next.value) &&
-    prev.multiple === next.multiple &&
-    prev.isDateTime === next.isDateTime &&
-    prev.use12Hour === next.use12Hour &&
-    prev.disabled === next.disabled &&
-    prev.readOnly === next.readOnly &&
-    prev.placeholder === next.placeholder &&
-    prev.format === next.format &&
-    prev.weekStartsOn === next.weekStartsOn &&
-    prev.disablePast === next.disablePast &&
-    prev.disableFuture === next.disableFuture &&
-    isDateEqual(prev.minDate ?? null, next.minDate ?? null) &&
-    isDateEqual(prev.maxDate ?? null, next.maxDate ?? null) &&
-    isDisabledDatesEqual(prev.disabledDates, next.disabledDates) &&
-    prev.classNames === next.classNames &&
-    prev.icons === next.icons &&
-    prev.open === next.open &&
-    prev.onOpenChange === next.onOpenChange &&
-    prev.onChange === next.onChange
-  );
-};
-
-const DatePicker = React.memo(DatePickerImpl, areEqual);
+const DatePicker = React.memo(DatePickerImpl);
 (DatePicker as any).displayName = "DatePicker";
 
 export { DatePicker };

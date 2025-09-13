@@ -13,12 +13,15 @@ export const email = z
     .email('Invalid email address')
     .nonempty('Email is required');
 
-export const nameSchema = z
-    .string("Name is required")
-    .min(1, "Name is required")
-    .refine((v) => v === v.trim(), { message: "Spaces are not allowed at starting and ending" })
+export const nameSchema = (fieldName: string, maxLength: number = 50, minLength = 1) => z
+    .string(`${fieldName} is required`)
+    .min(minLength, `${fieldName} is required`)
+    .max(maxLength, `${fieldName} must be at most ${maxLength} characters`)
+    .refine((v) => v === v.trim(), {
+        message: `${fieldName} cannot start or end with spaces`,
+    })
     .regex(/^[A-Za-z]+(?:\s[A-Za-z]+)*$/, {
-        message: "Only alphabets allowed; spaces only between words",
+        message: `${fieldName} must contain only alphabets and spaces between words`,
     });
 
 export const loginSchema = z.object({

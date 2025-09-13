@@ -20,7 +20,6 @@ export type SelectOption<T extends string | number = string> = {
   icon?: React.ReactNode;
 };
 
-
 type ClassNames = Partial<{
   container: string;
   control: string;
@@ -36,65 +35,81 @@ type ClassNames = Partial<{
   option: string;
   optionActive: string;
   optionSelected: string;
-  optionText: string,
+  optionText: string;
   noOptions: string;
-
-  // NEW label/error slots
   label: string;
   error: string;
 }>;
 
-/** Base props shared by single/multi */
 type BaseProps<T extends SelectOption> = {
   options?: T[];
   disabled?: boolean;
   clearable?: boolean;
   placeholder?: string;
-  // async
   loadOptions?: (query: string) => Promise<T[]>;
   debounceMs?: number;
-  // presentation
   classNames?: ClassNames;
   style?: CSSProperties;
   menuPlacement?: "auto" | "bottom" | "top";
   maxMenuHeight?: number;
-  // behavior
-  isRemoveSelected?: boolean; // hide already-selected options in the menu
-  // custom renderers
+  isRemoveSelected?: boolean;
   renderOption?: (opt: T, active: boolean, selected: boolean) => React.ReactNode;
   renderTag?: (opt: T, onRemove: () => void) => React.ReactNode;
-  // portal
   portalTarget?: HTMLElement | null;
-  portalId?: string; // element id; defaults to document.body
-
-  // NEW a11y/form bits
+  portalId?: string;
   id?: string;
   label?: string | React.ReactNode;
   required?: boolean;
-  /** true → red state; ReactNode → red state + message below */
-  error?: boolean | React.ReactNode;
+  error?: boolean | React.ReactNode | any;
 };
 
-/** Single-select props */
-type SingleProps<T extends SelectOption> = BaseProps<T> & {
+/** RHF bits when using {...register("field")} */
+// replace your RHFFieldProps with this:
+type RHFFieldProps = {
+  name?: string;
+  onChange?: (...args: any[]) => void; // ChangeHandler-compatible
+  onBlur?: (...args: any[]) => void;   // ChangeHandler-compatible
+  ref?: React.Ref<any>;
+};
+
+
+
+/** Controlled single-select */
+type ControlledSingleProps<T extends SelectOption> = BaseProps<T> & {
   multiple?: false;
   value: T | null;
   onChange: (next: T | null) => void;
 };
 
-/** Multi-select props */
-type MultiProps<T extends SelectOption> = BaseProps<T> & {
+/** Controlled multi-select */
+type ControlledMultiProps<T extends SelectOption> = BaseProps<T> & {
   multiple: true;
   value: T[];
   onChange: (next: T[]) => void;
 };
 
+type RegisteredSingleProps<T extends SelectOption> = BaseProps<T> & RHFFieldProps & {
+  multiple?: false;
+  value?: undefined; // keep this so "controlled" is differentiated by presence of value
+  // DO NOT forbid onChange here
+};
+
+type RegisteredMultiProps<T extends SelectOption> = BaseProps<T> & RHFFieldProps & {
+  multiple: true;
+  value?: undefined; // same reason
+  // DO NOT forbid onChange here
+};
+
 export type SelectProps<T extends SelectOption = SelectOption> =
-  | SingleProps<T>
-  | MultiProps<T>;
+  | ControlledSingleProps<T>
+  | ControlledMultiProps<T>
+  | RegisteredSingleProps<T>
+  | RegisteredMultiProps<T>;
+  
+
 
 /* ===========================
-   Small Portal (inline)
+   Portal
 =========================== */
 function Portal({
   children,
@@ -133,14 +148,11 @@ function includesOption<T extends SelectOption>(arr: T[], opt: T) {
 }
 
 /* ===========================
-   Select Component
+   Select
 =========================== */
-export function Select<T extends SelectOption = SelectOption>(
-  props: SelectProps<T>
-) {
+export function Select<T extends SelectOption = SelectOption>(props: SelectProps<T>) {
   const {
     options = [],
-    value,
     placeholder = "Select…",
     debounceMs = 250,
     classNames,
@@ -155,19 +167,27 @@ export function Select<T extends SelectOption = SelectOption>(
     disabled = false,
     clearable = true,
     isRemoveSelected = false,
-
-    // NEW labeled props
     id,
     label,
     required,
     error,
   } = props;
 
-  const multiple = props.multiple === true;
-  const onChangeSingle = !multiple
-    ? (props.onChange as (n: T | null) => void)
-    : undefined;
-  const onChangeMulti = multiple ? (props.onChange as (n: T[]) => void) : undefined;
+  const multiple = (props as any).multiple === true;
+
+  // Controlled vs register-mode (uncontrolled inside)
+  const isControlled = "value" in props && (props as any).value !== undefined;
+  const controlledValue = isControlled ? (props as any).value : undefined;
+  const onChangeSingle = !multiple ? ((props as any).onChange as (n: T | null) => void) : undefined;
+  const onChangeMulti = multiple ? ((props as any).onChange as (n: T[]) => void) : undefined;
+
+  // RHF handlers (only present when using {...register(...)})
+  const {
+    name,
+    onChange: rhfOnChange,
+    onBlur: rhfOnBlur,
+    ref: rhfRef,
+  } = (props as RHFFieldProps) || {};
 
   const controlRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -181,17 +201,24 @@ export function Select<T extends SelectOption = SelectOption>(
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // a11y ids
   const uid = React.useId();
   const inputId = id ?? `select-${uid}`;
   const errorId = `select-err-${uid}`;
 
-  // selected as array (compute early so we can filter options against it)
+  // Internal value array for register-mode (uncontrolled)
+  const [internalValue, setInternalValue] = useState<T[]>([]);
   const selectedArray: T[] = useMemo(() => {
-    return multiple ? ((value as T[]) ?? []) : value ? ([value as T] as T[]) : [];
-  }, [value, multiple]);
+    if (isControlled) {
+      return multiple
+        ? (controlledValue ?? [])
+        : controlledValue
+          ? [controlledValue as T]
+          : [];
+    }
+    return internalValue;
+  }, [isControlled, multiple, controlledValue, internalValue]);
 
-  // positioning
+  // Positioning
   const [menuPos, setMenuPos] = useState<{
     top: number;
     left: number;
@@ -199,32 +226,24 @@ export function Select<T extends SelectOption = SelectOption>(
     place: "top" | "bottom";
   }>({ top: 0, left: 0, width: 0, place: "bottom" });
 
-  // options (async or local filtered) + hide selected if requested
   const currentOptions: T[] = useMemo(() => {
-    const src: T[] = loadOptions
-      ? (asyncOptions ?? [])
-      : (() => {
-        const ql = q.trim().toLowerCase();
-        if (!ql) return options;
-        return options.filter((o) => o.label.toLowerCase().includes(ql));
-      })();
-
+    const src: T[] = loadOptions ? (asyncOptions ?? []) : (() => {
+      const ql = q.trim().toLowerCase();
+      if (!ql) return options;
+      return options.filter((o) => o.label.toLowerCase().includes(ql));
+    })();
     if (!isRemoveSelected || selectedArray.length === 0) return src;
     return src.filter((o) => !includesOption(selectedArray, o));
   }, [options, asyncOptions, q, loadOptions, isRemoveSelected, selectedArray]);
 
-  // load async options
+  // async options
   useEffect(() => {
     let abort = false;
     if (!loadOptions) return;
     setLoading(true);
     loadOptions(q)
-      .then((res) => {
-        if (!abort) setAsyncOptions(res);
-      })
-      .finally(() => {
-        if (!abort) setLoading(false);
-      });
+      .then((res) => !abort && setAsyncOptions(res))
+      .finally(() => !abort && setLoading(false));
     return () => {
       abort = true;
     };
@@ -232,7 +251,7 @@ export function Select<T extends SelectOption = SelectOption>(
 
   const isSelected = (opt: T) => includesOption(selectedArray, opt);
 
-  // measure & position menu (clamp horizontally, flip if needed)
+  // measure & position
   const measureAndPosition = () => {
     const ctrl = controlRef.current;
     if (!ctrl) return;
@@ -257,7 +276,6 @@ export function Select<T extends SelectOption = SelectOption>(
             ? "bottom"
             : "top";
     const top = place === "bottom" ? rect.bottom + scrollY : rect.top + scrollY;
-
     setMenuPos({ top, left, width, place });
   };
 
@@ -274,7 +292,7 @@ export function Select<T extends SelectOption = SelectOption>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, selectedArray.length]);
 
-  // outside click
+  // outside click → close + RHF blur
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -284,10 +302,11 @@ export function Select<T extends SelectOption = SelectOption>(
       if (m?.contains(e.target as Node)) return;
       setOpen(false);
       setQuery("");
+      rhfOnBlur?.(); // mark touched
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [open]);
+  }, [open, rhfOnBlur]);
 
   // keyboard nav
   const moveActive = (delta: number) => {
@@ -312,10 +331,7 @@ export function Select<T extends SelectOption = SelectOption>(
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (disabled) return;
-    if (
-      !open &&
-      (e.key === "ArrowDown" || e.key === "Enter" || e.key === " " || e.key === "ArrowUp")
-    ) {
+    if (!open && (e.key === "ArrowDown" || e.key === "Enter" || e.key === " " || e.key === "ArrowUp")) {
       setOpen(true);
       setTimeout(() => inputRef.current?.focus(), 0);
       e.preventDefault();
@@ -336,27 +352,40 @@ export function Select<T extends SelectOption = SelectOption>(
     } else if (e.key === "Escape") {
       setOpen(false);
       setQuery("");
+      rhfOnBlur?.();
       (controlRef.current?.querySelector("input") as HTMLInputElement | undefined)?.blur();
     } else if (e.key === "Backspace" && multiple && !query) {
       if (selectedArray.length > 0) {
         const next = selectedArray.slice(0, -1);
-        onChangeMulti?.(next);
+        setMulti(next);
       }
     }
   };
 
-  // select/clear
+  // ---- helpers to set value (controlled or internal) + notify RHF
+  const setSingle = (opt: T | null) => {
+    if (isControlled) onChangeSingle?.(opt);
+    else setInternalValue(opt ? [opt] : []);
+    rhfOnChange?.({ target: { name, value: opt ? (opt.value as any) : "" } });
+  };
+
+  const setMulti = (next: T[]) => {
+    if (isControlled) onChangeMulti?.(next);
+    else setInternalValue(next);
+    rhfOnChange?.({ target: { name, value: next.map((o) => o.value) } });
+  };
+
   const selectOption = (opt: T) => {
     if (multiple) {
-      if (isSelected(opt)) {
-        onChangeMulti?.(selectedArray.filter((o) => o.value !== opt.value));
-      } else {
-        onChangeMulti?.([...selectedArray, opt]);
-      }
+      const exists = isSelected(opt);
+      const next = exists
+        ? selectedArray.filter((o) => o.value !== opt.value)
+        : [...selectedArray, opt];
+      setMulti(next);
       setQuery("");
       inputRef.current?.focus();
     } else {
-      onChangeSingle?.(opt);
+      setSingle(opt);
       setOpen(false);
       setQuery("");
     }
@@ -364,8 +393,7 @@ export function Select<T extends SelectOption = SelectOption>(
 
   const clear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (multiple) onChangeMulti?.([]);
-    else onChangeSingle?.(null);
+    multiple ? setMulti([]) : setSingle(null);
     setQuery("");
     inputRef.current?.focus();
   };
@@ -377,12 +405,29 @@ export function Select<T extends SelectOption = SelectOption>(
   // ids for listbox
   const listboxId = useMemo(() => `sel-${Math.random().toString(36).slice(2)}`, []);
 
+  // positioning
+  const positionMenu = () => {
+    const ctrl = controlRef.current;
+    if (!ctrl) return;
+    const rect = ctrl.getBoundingClientRect();
+    const width = rect.width;
+    const left = rect.left + window.scrollX;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const place: "top" | "bottom" =
+      menuPlacement === "top"
+        ? "top"
+        : menuPlacement === "bottom"
+          ? "bottom"
+          : spaceBelow >= 180
+            ? "bottom"
+            : "top";
+    const top = place === "bottom" ? rect.bottom + window.scrollY : rect.top + window.scrollY;
+    setMenuPos({ top, left, width, place });
+  };
+
   return (
-    <div
-      className={clsx("relative inline-block w-full", classNames?.container)}
-      style={style}
-    >
-      {/* Label (string or node) */}
+    <div className={clsx("relative inline-block w-full", classNames?.container)} style={style}>
+      {/* Label */}
       {label &&
         (typeof label === "string" ? (
           <label
@@ -409,6 +454,12 @@ export function Select<T extends SelectOption = SelectOption>(
         aria-haspopup="listbox"
         tabIndex={-1}
         onKeyDown={handleKeyDown}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((v) => !v);
+          setTimeout(() => inputRef.current?.focus(), 0);
+          if (!open) positionMenu();
+        }}
         className={clsx(
           "relative flex min-h-10 w-full items-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm",
           "focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-200",
@@ -417,11 +468,6 @@ export function Select<T extends SelectOption = SelectOption>(
           classNames?.control,
           open && classNames?.controlFocused
         )}
-        onClick={() => {
-          if (disabled) return;
-          setOpen((v) => !v);
-          setTimeout(() => inputRef.current?.focus(), 0);
-        }}
       >
         {/* Value / Tags */}
         {multiple ? (
@@ -430,7 +476,7 @@ export function Select<T extends SelectOption = SelectOption>(
               renderTag ? (
                 <React.Fragment key={opt.value}>
                   {renderTag(opt, () =>
-                    onChangeMulti?.(selectedArray.filter((o) => o.value !== opt.value))
+                    setMulti(selectedArray.filter((o) => o.value !== opt.value))
                   )}
                 </React.Fragment>
               ) : (
@@ -446,15 +492,10 @@ export function Select<T extends SelectOption = SelectOption>(
                   <button
                     type="button"
                     aria-label="Remove"
-                    className={clsx(
-                      "text-slate-500 hover:text-dark-default",
-                      classNames?.tagRemove
-                    )}
+                    className={clsx("text-slate-500 hover:text-dark-default", classNames?.tagRemove)}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onChangeMulti?.(
-                        selectedArray.filter((o) => o.value !== opt.value)
-                      );
+                      setMulti(selectedArray.filter((o) => o.value !== opt.value));
                     }}
                   >
                     ×
@@ -471,16 +512,11 @@ export function Select<T extends SelectOption = SelectOption>(
                 if (!open) setOpen(true);
                 setActiveIndex(0);
               }}
-              className={clsx(
-                "min-w-[2ch] flex-1 bg-transparent outline-none",
-                classNames?.input
-              )}
+              className={clsx("min-w-[2ch] flex-1 bg-transparent outline-none", classNames?.input)}
               placeholder={selectedArray.length ? "" : placeholder}
               aria-invalid={!!error || undefined}
               aria-required={required || undefined}
-              aria-describedby={
-                typeof error !== "boolean" && error ? errorId : undefined
-              }
+              aria-describedby={typeof error !== "boolean" && error ? errorId : undefined}
             />
           </div>
         ) : (
@@ -520,35 +556,25 @@ export function Select<T extends SelectOption = SelectOption>(
               placeholder={!valueLabel ? placeholder : ""}
               aria-invalid={!!error || undefined}
               aria-required={required || undefined}
-              aria-describedby={
-                typeof error !== "boolean" && error ? errorId : undefined
-              }
+              aria-describedby={typeof error !== "boolean" && error ? errorId : undefined}
             />
           </>
         )}
 
         {/* Clear + Chevron */}
         <div className="ml-auto flex items-center gap-1">
-          {clearable &&
-            (multiple ? selectedArray.length > 0 : !!selectedArray[0]) && (
-              <button
-                type="button"
-                onClick={clear}
-                className={clsx(
-                  "rounded p-1 text-slate-400 hover:text-dark-default",
-                  classNames?.clear
-                )}
-                aria-label="Clear"
-              >
-                ×
-              </button>
-            )}
+          {clearable && (multiple ? selectedArray.length > 0 : !!selectedArray[0]) && (
+            <button
+              type="button"
+              onClick={clear}
+              className={clsx("rounded p-1 text-slate-400 hover:text-dark-default", classNames?.clear)}
+              aria-label="Clear"
+            >
+              ×
+            </button>
+          )}
           <svg
-            className={clsx(
-              "h-4 w-4 transition-transform",
-              open && "rotate-180",
-              classNames?.icon
-            )}
+            className={clsx("h-4 w-4 transition-transform", open && "rotate-180", classNames?.icon)}
             viewBox="0 0 20 20"
             fill="currentColor"
             aria-hidden="true"
@@ -558,11 +584,42 @@ export function Select<T extends SelectOption = SelectOption>(
         </div>
       </div>
 
-      {/* Error text (if provided as node/string) */}
+      {/* Error text (node/string) */}
       {typeof error !== "boolean" && error && (
         <p id={errorId} className={clsx("mt-1 text-xs text-red-600", classNames?.error)}>
           {error}
         </p>
+      )}
+
+      {/* Hidden inputs to support {...register("field")} */}
+      {name && !multiple && (
+        <input
+          type="hidden"
+          name={name}
+          value={selectedArray[0]?.value ?? ""}
+          onChange={() => { }}
+          onBlur={rhfOnBlur}
+          ref={rhfRef}
+        />
+      )}
+      {name && multiple && (
+        <>
+          {selectedArray.map((opt, i) => (
+            <input
+              key={opt.value}
+              type="hidden"
+              name={`${name}[${i}]`}
+              value={opt.value}
+              onChange={() => { }}
+              onBlur={i === 0 ? rhfOnBlur : undefined}
+              ref={i === 0 ? rhfRef : undefined}
+            />
+          ))}
+          {/* Ensure field exists when empty */}
+          {selectedArray.length === 0 && (
+            <input type="hidden" name={`${name}[]`} value="" onChange={() => { }} onBlur={rhfOnBlur} ref={rhfRef} />
+          )}
+        </>
       )}
 
       {/* Menu (Portal) */}
@@ -576,10 +633,7 @@ export function Select<T extends SelectOption = SelectOption>(
             style={{
               position: "absolute",
               top: menuPos.place === "bottom" ? menuPos.top : undefined,
-              bottom:
-                menuPos.place === "top"
-                  ? window.innerHeight - menuPos.top
-                  : undefined,
+              bottom: menuPos.place === "top" ? window.innerHeight - menuPos.top : undefined,
               left: menuPos.left,
               width: menuPos.width,
               maxHeight: maxMenuHeight,
@@ -595,12 +649,7 @@ export function Select<T extends SelectOption = SelectOption>(
             {loading ? (
               <div className="px-3 py-2 text-sm text-slate-500">Loading…</div>
             ) : currentOptions.length === 0 ? (
-              <div
-                className={clsx(
-                  "px-3 py-2 text-sm text-slate-500",
-                  classNames?.noOptions
-                )}
-              >
+              <div className={clsx("px-3 py-2 text-sm text-slate-500", classNames?.noOptions)}>
                 No results
               </div>
             ) : (
@@ -609,7 +658,7 @@ export function Select<T extends SelectOption = SelectOption>(
                 const selected = isSelected(opt);
                 return (
                   <div
-                    key={opt.value}
+                    key={String(opt.value)}
                     role="option"
                     aria-selected={selected}
                     data-index={i}
@@ -646,3 +695,5 @@ export function Select<T extends SelectOption = SelectOption>(
     </div>
   );
 }
+
+export default Select;

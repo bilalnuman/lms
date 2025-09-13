@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type ReactNode, type FormHTMLAttributes } from "react";
+import React, { type ReactNode, type FormHTMLAttributes, useEffect, use, forwardRef, useImperativeHandle } from "react";
 import {
   useForm,
   FormProvider,
@@ -43,16 +43,19 @@ function isRenderFn<TValues extends FieldValues>(
 }
 
 
-const Form = <S extends ObjectSchema,>({
-  schema,
-  defaultValues,
-  onSubmit,
-  onError,
-  children,
-  mode = "onSubmit",
-  reValidateMode = "onChange",
-  ...formProps
-}: FormProps<S>) => {
+const Form = forwardRef(function Form<S extends ObjectSchema>(
+  {
+    schema,
+    defaultValues,
+    onSubmit,
+    onError,
+    children,
+    mode = "onSubmit",
+    reValidateMode = "onChange",
+    ...formProps
+  }: FormProps<S>,
+  ref: React.Ref<UseFormReturn<z.infer<S>>>
+) {
   type Values = z.infer<S>;
 
   const methods = useForm<Values>({
@@ -69,6 +72,16 @@ const Form = <S extends ObjectSchema,>({
     onError as SubmitErrorHandler<Values> | undefined
   );
 
+  // 👇 expose methods to parent
+  // @ts-ignore
+  useImperativeHandle(ref, () => methods, [methods]);
+
+  useEffect(() => {
+    if (defaultValues) {
+      methods.reset(defaultValues);
+    }
+  }, [defaultValues, methods]);
+
   return (
     <FormProvider {...methods}>
       <form noValidate onSubmit={submit} {...formProps} className="w-full">
@@ -77,6 +90,7 @@ const Form = <S extends ObjectSchema,>({
       </form>
     </FormProvider>
   );
-};
+});
+
 
 export default Form;
